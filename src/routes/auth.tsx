@@ -62,10 +62,9 @@ function AuthPage() {
           },
         });
         if (error) throw error;
-        if (data.user && search.role === "brand") {
-          // Grant brand_partner role in addition to default consumer
-          await supabase.from("user_roles").insert({ user_id: data.user.id, role: "brand_partner" });
-        }
+        // brand_partner role, if requested, is granted server-side by the
+        // handle_new_user trigger reading raw_user_meta_data.intended_role.
+
         toast.success("Account created. Welcome to PerkHub!");
         // If email confirmation is off, session is set already.
         const { data: sess } = await supabase.auth.getSession();
