@@ -152,13 +152,6 @@ export type Database = {
             foreignKeyName: "commission_invoices_brand_id_fkey"
             columns: ["brand_id"]
             isOneToOne: false
-            referencedRelation: "brand_directory"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "commission_invoices_brand_id_fkey"
-            columns: ["brand_id"]
-            isOneToOne: false
             referencedRelation: "brands"
             referencedColumns: ["id"]
           },
@@ -232,13 +225,6 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
-          {
-            foreignKeyName: "deals_brand_id_fkey"
-            columns: ["brand_id"]
-            isOneToOne: false
-            referencedRelation: "brand_directory"
-            referencedColumns: ["id"]
-          },
           {
             foreignKeyName: "deals_brand_id_fkey"
             columns: ["brand_id"]
@@ -405,13 +391,6 @@ export type Database = {
             foreignKeyName: "transactions_brand_id_fkey"
             columns: ["brand_id"]
             isOneToOne: false
-            referencedRelation: "brand_directory"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "transactions_brand_id_fkey"
-            columns: ["brand_id"]
-            isOneToOne: false
             referencedRelation: "brands"
             referencedColumns: ["id"]
           },
@@ -510,39 +489,7 @@ export type Database = {
       }
     }
     Views: {
-      brand_directory: {
-        Row: {
-          category: string | null
-          created_at: string | null
-          description: string | null
-          id: string | null
-          logo_url: string | null
-          name: string | null
-          slug: string | null
-          website: string | null
-        }
-        Insert: {
-          category?: string | null
-          created_at?: string | null
-          description?: string | null
-          id?: string | null
-          logo_url?: string | null
-          name?: string | null
-          slug?: string | null
-          website?: string | null
-        }
-        Update: {
-          category?: string | null
-          created_at?: string | null
-          description?: string | null
-          id?: string | null
-          logo_url?: string | null
-          name?: string | null
-          slug?: string | null
-          website?: string | null
-        }
-        Relationships: []
-      }
+      [_ in never]: never
     }
     Functions: {
       [_ in never]: never
