@@ -58,8 +58,10 @@ function VerificationsQueue() {
       to,
       reason,
     }: { id: string; to: "verified" | "rejected"; reason?: string }) => {
-      const patch: Record<string, unknown> = { status: to };
-      if (to === "rejected") patch.rejection_reason = reason ?? "Not verifiable";
+      const patch = {
+        status: to,
+        rejection_reason: to === "rejected" ? reason ?? "Not verifiable" : null,
+      };
       const { error } = await supabase.from("user_memberships").update(patch).eq("id", id);
       if (error) throw error;
     },
