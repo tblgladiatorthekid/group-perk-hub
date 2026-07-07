@@ -1,6 +1,7 @@
 import { serve } from "@hono/node-server";
 import { Hono } from "hono";
 import { errorHandler } from "./middleware/error";
+import { authRoutes } from "./routes/auth";
 
 export function createApp() {
   const app = new Hono();
@@ -8,6 +9,7 @@ export function createApp() {
   app.onError(errorHandler);
 
   app.get("/api/health", (c) => c.json({ status: "ok", timestamp: new Date().toISOString() }));
+  app.route("/api/auth", authRoutes);
 
   return app;
 }
