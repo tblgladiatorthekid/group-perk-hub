@@ -1,6 +1,6 @@
 import type { Db } from "../db/client";
 import { profiles } from "../db/schema";
-import { eq } from "drizzle-orm";
+import { eq, inArray } from "drizzle-orm";
 
 export interface CreateProfileInput {
   id: string;
@@ -10,6 +10,11 @@ export interface CreateProfileInput {
 export async function getProfile(db: Db, id: string) {
   const rows = await db.select().from(profiles).where(eq(profiles.id, id));
   return rows[0] ?? null;
+}
+
+export async function getProfilesByIds(db: Db, ids: string[]) {
+  if (ids.length === 0) return [];
+  return db.select().from(profiles).where(inArray(profiles.id, ids));
 }
 
 export async function createProfile(db: Db, input: CreateProfileInput) {

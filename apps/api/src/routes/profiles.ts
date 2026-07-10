@@ -1,11 +1,22 @@
 import { Hono } from "hono";
-import { requireAuth } from "../middleware/auth";
+import { requireAuth, requireRole } from "../middleware/auth";
 import { db } from "../db/client";
 import * as profilesRepo from "../repositories/profiles.repo";
 
 export const profileRoutes = new Hono();
 
 profileRoutes.use("/*", requireAuth);
+
+// Admin-only bulk lookup, e.g. GET /profiles?ids=a,b,c — used to resolve
+// submitter name/phone for the membership verification queue.
+profileRoutes.get("/", requireRole("admin"), async (c) => {
+  const ids = (c.req.query("ids") ?? "")
+    .split(",")
+    .map((id) => id.trim())
+    .filter(Boolean);
+  const profiles = await profilesRepo.getProfilesByIds(db, ids);
+  return c.json(profiles);
+});
 
 profileRoutes.get("/me", async (c) => {
   const userId = c.var.userId;

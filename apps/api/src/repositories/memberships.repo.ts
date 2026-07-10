@@ -1,7 +1,7 @@
 import type { Db } from "../db/client";
 import { userMemberships } from "../db/schema";
 import { eq, desc } from "drizzle-orm";
-import type { VerificationMethod } from "@perkhub/shared";
+import type { MembershipStatus, VerificationMethod } from "@perkhub/shared";
 
 export interface CreateMembershipInput {
   userId: string;
@@ -17,6 +17,14 @@ export async function listMembershipsForUser(db: Db, userId: string) {
     .select()
     .from(userMemberships)
     .where(eq(userMemberships.userId, userId))
+    .orderBy(desc(userMemberships.createdAt));
+}
+
+export async function listMembershipsByStatus(db: Db, status: MembershipStatus) {
+  return db
+    .select()
+    .from(userMemberships)
+    .where(eq(userMemberships.status, status))
     .orderBy(desc(userMemberships.createdAt));
 }
 

@@ -1,5 +1,6 @@
 import { serve } from "@hono/node-server";
 import { Hono } from "hono";
+import { cors } from "hono/cors";
 import { errorHandler } from "./middleware/error";
 import { authRoutes } from "./routes/auth";
 import { profileRoutes } from "./routes/profiles";
@@ -18,6 +19,15 @@ export function createApp() {
   const app = new Hono();
 
   app.onError(errorHandler);
+
+  app.use(
+    "/api/*",
+    cors({
+      origin: (process.env.WEB_ORIGIN ?? "*").split(","),
+      allowHeaders: ["Content-Type", "Authorization"],
+      credentials: true,
+    }),
+  );
 
   app.get("/api/health", (c) => c.json({ status: "ok", timestamp: new Date().toISOString() }));
   app.route("/api/auth", authRoutes);

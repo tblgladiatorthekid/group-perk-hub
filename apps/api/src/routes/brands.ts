@@ -11,6 +11,13 @@ brandRoutes.get("/", async (c) => {
   return c.json(allBrands.filter((b) => b.status === "approved"));
 });
 
+// Authenticated: caller's own brand regardless of status. Registered before
+// /:id so "mine" isn't captured as an :id param.
+brandRoutes.get("/mine", requireAuth, async (c) => {
+  const brand = await brandsRepo.getBrandByOwner(db, c.var.userId);
+  return c.json(brand);
+});
+
 brandRoutes.get("/:id", async (c) => {
   const brand = await brandsRepo.getBrand(db, c.req.param("id"));
   if (!brand) return c.json({ error: "Brand not found" }, 404);

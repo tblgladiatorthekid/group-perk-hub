@@ -11,6 +11,15 @@ export async function getBrand(db: Db, id: string) {
   return rows[0] ?? null;
 }
 
+export async function getBrandByOwner(db: Db, ownerUserId: string) {
+  const rows = await db
+    .select()
+    .from(brands)
+    .where(eq(brands.ownerUserId, ownerUserId))
+    .orderBy(desc(brands.createdAt));
+  return rows[0] ?? null;
+}
+
 export async function createBrand(db: Db, data: typeof brands.$inferInsert) {
   const rows = await db.insert(brands).values(data).returning();
   return rows[0];

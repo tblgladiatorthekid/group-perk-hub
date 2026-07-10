@@ -7,17 +7,20 @@ interface ClerkUserEventData {
   email_addresses: { email_address: string; id: string }[];
   first_name: string | null;
   last_name: string | null;
-  public_metadata?: Record<string, unknown>;
+  // Only unsafe_metadata is settable by the client SDK during sign-up;
+  // public_metadata requires a backend/dashboard call, so intended_role
+  // (set by the frontend at signup) always arrives via unsafe_metadata.
+  unsafe_metadata?: Record<string, unknown>;
 }
 
 export async function handleUserCreated(db: Db, eventData: ClerkUserEventData) {
-  const { id, first_name, last_name, public_metadata } = eventData;
+  const { id, first_name, last_name, unsafe_metadata } = eventData;
   const fullName = [first_name, last_name].filter(Boolean).join(" ") || null;
 
   await profilesRepo.createProfile(db, { id, fullName });
   await userRolesRepo.addRole(db, id, "consumer");
 
-  const intendedRole = public_metadata?.intended_role as string | undefined;
+  const intendedRole = unsafe_metadata?.intended_role as string | undefined;
   if (intendedRole === "brand" || intendedRole === "brand_partner") {
     await userRolesRepo.addRole(db, id, "brand_partner");
   }
