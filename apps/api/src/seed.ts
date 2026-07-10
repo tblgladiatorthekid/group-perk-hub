@@ -1,7 +1,15 @@
 import { db } from "./db/client";
 import { affiliationGroups } from "./db/schema";
+import type { VerificationMethod } from "@perkhub/shared";
 
-const seedGroups = [
+const seedGroups: {
+  name: string;
+  type: "nysc" | "alumni" | "professional";
+  description: string;
+  verificationMethods: VerificationMethod[];
+  emailDomains: string[];
+  badgeValidityMonths: number;
+}[] = [
   {
     name: "NYSC Corps Members",
     type: "nysc" as const,
