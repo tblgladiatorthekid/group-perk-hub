@@ -7,11 +7,11 @@ import {
   HeadContent,
   Scripts,
 } from "@tanstack/react-router";
-import { useEffect, type ReactNode } from "react";
+import { ClerkProvider, useAuth } from "@clerk/tanstack-react-start";
+import { useEffect, useRef, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
-import { supabase } from "@/integrations/supabase/client";
 import { Toaster } from "@/components/ui/sonner";
 
 function NotFoundComponent() {
@@ -126,23 +126,32 @@ function RootShell({ children }: { children: ReactNode }) {
   );
 }
 
-function RootComponent() {
-  const { queryClient } = Route.useRouteContext();
+function AuthWatcher({ queryClient }: { queryClient: QueryClient }) {
+  const { isSignedIn } = useAuth();
   const router = useRouter();
+  const prevSignedIn = useRef(isSignedIn);
 
   useEffect(() => {
-    const { data: sub } = supabase.auth.onAuthStateChange((event) => {
-      if (event !== "SIGNED_IN" && event !== "SIGNED_OUT" && event !== "USER_UPDATED") return;
-      router.invalidate();
-      if (event !== "SIGNED_OUT") queryClient.invalidateQueries();
-    });
-    return () => sub.subscription.unsubscribe();
-  }, [router, queryClient]);
+    if (prevSignedIn.current === isSignedIn) return;
+    prevSignedIn.current = isSignedIn;
+    router.invalidate();
+    if (isSignedIn) queryClient.invalidateQueries();
+  }, [isSignedIn, router, queryClient]);
+
+  return null;
+}
+
+function RootComponent() {
+  const { queryClient } = Route.useRouteContext();
+  const publishableKey = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY as string;
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <Outlet />
-      <Toaster richColors position="top-center" />
-    </QueryClientProvider>
+    <ClerkProvider publishableKey={publishableKey}>
+      <QueryClientProvider client={queryClient}>
+        <AuthWatcher queryClient={queryClient} />
+        <Outlet />
+        <Toaster richColors position="top-center" />
+      </QueryClientProvider>
+    </ClerkProvider>
   );
 }

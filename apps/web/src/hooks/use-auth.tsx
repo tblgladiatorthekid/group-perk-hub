@@ -3,6 +3,8 @@ import { useQuery } from "@tanstack/react-query";
 import type { AppRole } from "@perkhub/shared";
 import { apiClient } from "@/lib/api-client";
 
+export type { AppRole } from "@perkhub/shared";
+
 export function useAuthStatus() {
   const { isSignedIn, userId } = useAuth();
   const { user } = useUser();

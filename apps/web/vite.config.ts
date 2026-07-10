@@ -12,4 +12,16 @@ export default defineConfig({
     // nitro/vite builds from this
     server: { entry: "server" },
   },
+  vite: {
+    server: {
+      // Dev-only: proxy same-origin /api calls to the Hono API (apps/api) so
+      // VITE_API_URL can stay unset locally. Override VITE_API_URL for prod.
+      proxy: {
+        "/api": {
+          target: "http://localhost:3001",
+          changeOrigin: true,
+        },
+      },
+    },
+  },
 });
