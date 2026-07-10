@@ -4,13 +4,13 @@
   "type": "module",
   "workspaces": ["apps/*", "packages/*"],
   "scripts": {
-    "dev:api": "npm run dev --workspace apps/api",
-    "dev:web": "npm run dev --workspace apps/web",
-    "build:api": "npm run build --workspace apps/api",
-    "build:web": "npm run build --workspace apps/web",
-    "db:generate": "npm run db:generate --workspace apps/api",
-    "db:migrate": "npm run db:migrate --workspace apps/api",
-    "test": "npm run test --workspace apps/api",
-    "lint": "eslint ."
+    "dev:api": "bun run --cwd apps/api dev",
+    "dev:web": "bun run --cwd apps/web dev",
+    "build:api": "bun run --cwd apps/api build",
+    "build:web": "bun run --cwd apps/web build",
+    "db:generate": "bun run --cwd apps/api db:generate",
+    "db:migrate": "bun run --cwd apps/api db:migrate",
+    "test": "bun run --cwd apps/api test",
+    "lint": "bun run --cwd apps/web lint"
   }
 }
