@@ -1,7 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { BadgeCheck, Home, Sparkles, Ticket, User } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+import type { AffiliationGroup, UserMembership } from "@perkhub/shared";
+import { apiClient } from "@/lib/api-client";
 import { DashboardShell, EmptyState } from "@/components/perk/DashboardShell";
 import { Button } from "@/components/ui/button";
 import { VerifiedBadge } from "@/components/perk/VerifiedBadge";
@@ -22,12 +23,12 @@ function ConsumerHome() {
   const { data: memberships } = useQuery({
     queryKey: ["my-memberships"],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("user_memberships")
-        .select("id, status, group_id, affiliation_groups(name, type)")
-        .order("created_at", { ascending: false });
-      if (error) throw error;
-      return data;
+      const [memberships, groups] = await Promise.all([
+        apiClient<UserMembership[]>("/memberships"),
+        apiClient<AffiliationGroup[]>("/groups"),
+      ]);
+      const groupMap = new Map(groups.map((g) => [g.id, g]));
+      return memberships.map((m) => ({ ...m, group: groupMap.get(m.groupId) ?? null }));
     },
   });
 
@@ -48,7 +49,7 @@ function ConsumerHome() {
             {verified ? (
               <VerifiedBadge status="verified" />
             ) : primary ? (
-              <VerifiedBadge status={primary.status as "pending" | "rejected" | "expired"} />
+              <VerifiedBadge status={primary.status} />
             ) : (
               <span className="text-sm text-muted-foreground">Not started</span>
             )}
@@ -87,13 +88,11 @@ function ConsumerHome() {
               {memberships.map((m) => (
                 <li key={m.id} className="flex items-center justify-between py-3">
                   <div>
-                    <div className="font-medium">{m.affiliation_groups?.name}</div>
-                    <div className="text-xs uppercase text-muted-foreground">
-                      {m.affiliation_groups?.type}
-                    </div>
+                    <div className="font-medium">{m.group?.name}</div>
+                    <div className="text-xs uppercase text-muted-foreground">{m.group?.type}</div>
                   </div>
                   <div className="flex items-center gap-3">
-                    <VerifiedBadge status={m.status as "pending" | "verified" | "rejected" | "expired"} />
+                    <VerifiedBadge status={m.status} />
                     {m.status === "verified" && (
                       <Button asChild size="sm" variant="ghost">
                         <Link to="/app/membership">View card</Link>

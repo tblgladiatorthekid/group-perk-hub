@@ -2,7 +2,8 @@ import { useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { BarChart3, LayoutDashboard, ShieldCheck, Store, Users, Wallet, ExternalLink, Loader2 } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+import type { AffiliationGroup, MembershipStatus, Profile, UserMembership } from "@perkhub/shared";
+import { apiClient } from "@/lib/api-client";
 import { DashboardShell, EmptyState } from "@/components/perk/DashboardShell";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -24,7 +25,9 @@ const nav = [
   { to: "/admin", label: "Commissions (soon)", icon: <Wallet className="h-4 w-4" /> },
 ];
 
-type Status = "pending" | "verified" | "rejected" | "expired";
+type Status = MembershipStatus;
+
+type Row = UserMembership & { group: AffiliationGroup | null; profile: Profile | null };
 
 function VerificationsQueue() {
   const qc = useQueryClient();
@@ -33,22 +36,24 @@ function VerificationsQueue() {
 
   const { data: rows, isLoading } = useQuery({
     queryKey: ["admin-memberships", status],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("user_memberships")
-        .select(
-          "id, user_id, status, method, membership_number, id_document_url, rejection_reason, verified_at, expires_at, created_at, affiliation_groups(name, type)"
-        )
-        .eq("status", status)
-        .order("created_at", { ascending: false });
-      if (error) throw error;
+    queryFn: async (): Promise<Row[]> => {
+      const [memberships, groups] = await Promise.all([
+        apiClient<UserMembership[]>(`/memberships?status=${status}`),
+        apiClient<AffiliationGroup[]>("/groups"),
+      ]);
+      const groupMap = new Map(groups.map((g) => [g.id, g]));
 
-      const userIds = Array.from(new Set(data.map((r) => r.user_id)));
+      const userIds = Array.from(new Set(memberships.map((m) => m.userId)));
       const profiles = userIds.length
-        ? await supabase.from("profiles").select("id, full_name, phone").in("id", userIds)
-        : { data: [] as { id: string; full_name: string | null; phone: string | null }[] };
-      const map = new Map((profiles.data ?? []).map((p) => [p.id, p]));
-      return data.map((r) => ({ ...r, profile: map.get(r.user_id) ?? null }));
+        ? await apiClient<Profile[]>(`/profiles?ids=${userIds.join(",")}`)
+        : [];
+      const profileMap = new Map(profiles.map((p) => [p.id, p]));
+
+      return memberships.map((m) => ({
+        ...m,
+        group: groupMap.get(m.groupId) ?? null,
+        profile: profileMap.get(m.userId) ?? null,
+      }));
     },
   });
 
@@ -58,12 +63,13 @@ function VerificationsQueue() {
       to,
       reason,
     }: { id: string; to: "verified" | "rejected"; reason?: string }) => {
-      const patch = {
-        status: to,
-        rejection_reason: to === "rejected" ? reason ?? "Not verifiable" : null,
-      };
-      const { error } = await supabase.from("user_memberships").update(patch).eq("id", id);
-      if (error) throw error;
+      await apiClient(`/memberships/${id}`, {
+        method: "PATCH",
+        body: JSON.stringify({
+          status: to,
+          rejectionReason: to === "rejected" ? (reason ?? "Not verifiable") : null,
+        }),
+      });
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["admin-memberships"] });
@@ -73,13 +79,15 @@ function VerificationsQueue() {
     onError: (e) => toast.error("Update failed", { description: e instanceof Error ? e.message : "" }),
   });
 
-  async function openDoc(path: string) {
-    const { data, error } = await supabase.storage.from("membership-docs").createSignedUrl(path, 300);
-    if (error || !data) {
+  async function openDoc(key: string) {
+    try {
+      const { downloadUrl } = await apiClient<{ downloadUrl: string }>(
+        `/storage/presign-download?key=${encodeURIComponent(key)}`,
+      );
+      window.open(downloadUrl, "_blank", "noopener,noreferrer");
+    } catch {
       toast.error("Could not open document");
-      return;
     }
-    window.open(data.signedUrl, "_blank", "noopener,noreferrer");
   }
 
   return (
@@ -109,21 +117,21 @@ function VerificationsQueue() {
               <div className="flex flex-wrap items-start justify-between gap-4">
                 <div>
                   <div className="font-display text-lg font-semibold">
-                    {r.profile?.full_name ?? "Unnamed member"}
+                    {r.profile?.fullName ?? "Unnamed member"}
                   </div>
                   <div className="text-sm text-muted-foreground">
-                    {r.affiliation_groups?.name}{" "}
-                    <span className="text-xs uppercase">· {r.affiliation_groups?.type}</span>
+                    {r.group?.name}{" "}
+                    <span className="text-xs uppercase">· {r.group?.type}</span>
                   </div>
                   <div className="mt-2 grid grid-cols-2 gap-3 text-xs md:grid-cols-4">
                     <div>
                       <div className="text-muted-foreground">Method</div>
                       <div className="font-medium capitalize">{r.method.replace("_", " ")}</div>
                     </div>
-                    {r.membership_number && (
+                    {r.membershipNumber && (
                       <div>
                         <div className="text-muted-foreground">Member #</div>
-                        <div className="font-mono">{r.membership_number}</div>
+                        <div className="font-mono">{r.membershipNumber}</div>
                       </div>
                     )}
                     {r.profile?.phone && (
@@ -134,16 +142,16 @@ function VerificationsQueue() {
                     )}
                     <div>
                       <div className="text-muted-foreground">Submitted</div>
-                      <div>{new Date(r.created_at).toLocaleDateString("en-NG")}</div>
+                      <div>{new Date(r.createdAt).toLocaleDateString("en-NG")}</div>
                     </div>
                   </div>
                 </div>
-                <VerifiedBadge status={r.status as Status} />
+                <VerifiedBadge status={r.status} />
               </div>
 
-              {r.id_document_url && (
+              {r.idDocumentUrl && (
                 <div className="mt-4">
-                  <Button variant="outline" size="sm" onClick={() => openDoc(r.id_document_url!)}>
+                  <Button variant="outline" size="sm" onClick={() => openDoc(r.idDocumentUrl!)}>
                     <ExternalLink className="h-4 w-4" /> View ID document
                   </Button>
                 </div>
@@ -181,9 +189,9 @@ function VerificationsQueue() {
                 </div>
               )}
 
-              {r.status === "rejected" && r.rejection_reason && (
+              {r.status === "rejected" && r.rejectionReason && (
                 <div className="mt-3 rounded-lg bg-destructive/5 p-3 text-sm text-destructive">
-                  {r.rejection_reason}
+                  {r.rejectionReason}
                 </div>
               )}
             </article>

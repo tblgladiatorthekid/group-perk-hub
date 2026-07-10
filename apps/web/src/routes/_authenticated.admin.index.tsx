@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { BarChart3, LayoutDashboard, ShieldCheck, Store, Users, Wallet } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+import { apiClient } from "@/lib/api-client";
 import { DashboardShell } from "@/components/perk/DashboardShell";
 import { Button } from "@/components/ui/button";
 
@@ -18,23 +18,17 @@ const nav = [
   { to: "/admin", label: "Commissions (soon)", icon: <Wallet className="h-4 w-4" /> },
 ];
 
+interface AdminStats {
+  groups: number;
+  brands: number;
+  pendingVerifications: number;
+  transactions: number;
+}
+
 function AdminHome() {
   const { data: counts } = useQuery({
     queryKey: ["admin-counts"],
-    queryFn: async () => {
-      const [groups, brands, memberships, txs] = await Promise.all([
-        supabase.from("affiliation_groups").select("id", { count: "exact", head: true }),
-        supabase.from("brands").select("id", { count: "exact", head: true }),
-        supabase.from("user_memberships").select("id", { count: "exact", head: true }).eq("status", "pending"),
-        supabase.from("transactions").select("id", { count: "exact", head: true }),
-      ]);
-      return {
-        groups: groups.count ?? 0,
-        brands: brands.count ?? 0,
-        pendingVerifications: memberships.count ?? 0,
-        transactions: txs.count ?? 0,
-      };
-    },
+    queryFn: () => apiClient<AdminStats>("/admin/stats"),
   });
 
   return (

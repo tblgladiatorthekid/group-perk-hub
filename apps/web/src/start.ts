@@ -1,7 +1,6 @@
 import { createStart, createMiddleware } from "@tanstack/react-start";
 
 import { renderErrorPage } from "./lib/error-page";
-import { attachSupabaseAuth } from "@/integrations/supabase/auth-attacher";
 
 const errorMiddleware = createMiddleware().server(async ({ next }) => {
   try {
@@ -18,7 +17,9 @@ const errorMiddleware = createMiddleware().server(async ({ next }) => {
   }
 });
 
+// No functionMiddleware: this app has no TanStack Start server functions —
+// authenticated calls go through the Hono API via apiClient (which attaches
+// the Clerk session token itself), not through server-function RPCs.
 export const startInstance = createStart(() => ({
-  functionMiddleware: [attachSupabaseAuth],
   requestMiddleware: [errorMiddleware],
 }));

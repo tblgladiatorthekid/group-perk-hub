@@ -2,7 +2,8 @@ import { useMemo, useState } from "react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { BadgeCheck, Home, Sparkles, Ticket, User, Upload, CheckCircle2, Loader2 } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+import type { AffiliationGroup, VerificationMethod } from "@perkhub/shared";
+import { apiClient } from "@/lib/api-client";
 import { DashboardShell } from "@/components/perk/DashboardShell";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -23,8 +24,6 @@ const nav = [
   { to: "/app", label: "Profile (soon)", icon: <User className="h-4 w-4" /> },
 ];
 
-type VerificationMethod = "id_upload" | "email_domain" | "membership_number";
-
 function VerifyPage() {
   const navigate = useNavigate();
   const qc = useQueryClient();
@@ -37,19 +36,11 @@ function VerifyPage() {
 
   const { data: groups } = useQuery({
     queryKey: ["affiliation_groups", "active"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("affiliation_groups")
-        .select("id, name, type, verification_methods, email_domains, badge_validity_months")
-        .eq("active", true)
-        .order("name");
-      if (error) throw error;
-      return data;
-    },
+    queryFn: () => apiClient<AffiliationGroup[]>("/groups"),
   });
 
   const group = useMemo(() => groups?.find((g) => g.id === groupId), [groups, groupId]);
-  const availableMethods = (group?.verification_methods ?? []) as VerificationMethod[];
+  const availableMethods = group?.verificationMethods ?? [];
 
   const canSubmit =
     !!groupId &&
@@ -63,31 +54,37 @@ function VerifyPage() {
     if (!canSubmit || !group) return;
     setSubmitting(true);
     try {
-      const { data: userData } = await supabase.auth.getUser();
-      const user = userData.user;
-      if (!user) throw new Error("Not signed in");
-
       let idDocumentUrl: string | null = null;
       if (method === "id_upload" && file) {
-        const ext = file.name.split(".").pop()?.toLowerCase() ?? "bin";
-        const path = `${user.id}/${crypto.randomUUID()}.${ext}`;
-        const up = await supabase.storage.from("membership-docs").upload(path, file, {
-          contentType: file.type || undefined,
-          upsert: false,
+        const { uploadUrl, key } = await apiClient<{ uploadUrl: string; key: string }>(
+          "/storage/presign-upload",
+          {
+            method: "POST",
+            body: JSON.stringify({
+              bucket: "membership-docs",
+              fileName: file.name,
+              contentType: file.type,
+            }),
+          },
+        );
+        const upload = await fetch(uploadUrl, {
+          method: "PUT",
+          headers: { "Content-Type": file.type || "application/octet-stream" },
+          body: file,
         });
-        if (up.error) throw up.error;
-        idDocumentUrl = up.data.path;
+        if (!upload.ok) throw new Error("Document upload failed");
+        idDocumentUrl = key;
       }
 
-      const { error } = await supabase.from("user_memberships").insert({
-        user_id: user.id,
-        group_id: group.id,
-        method,
-        membership_number: method === "membership_number" ? membershipNumber.trim() : null,
-        id_document_url: idDocumentUrl,
-        status: "pending",
+      await apiClient("/memberships", {
+        method: "POST",
+        body: JSON.stringify({
+          groupId: group.id,
+          method,
+          membershipNumber: method === "membership_number" ? membershipNumber.trim() : null,
+          idDocumentUrl,
+        }),
       });
-      if (error) throw error;
 
       await qc.invalidateQueries({ queryKey: ["my-memberships"] });
       toast.success("Submitted", {
@@ -151,7 +148,7 @@ function VerifyPage() {
                     <div className="text-xs text-muted-foreground">
                       Instant verification if your sign-in email ends in{" "}
                       <span className="font-mono">
-                        {(group.email_domains ?? []).map((d) => `@${d}`).join(", ") || "an approved domain"}
+                        {(group.emailDomains ?? []).map((d) => `@${d}`).join(", ") || "an approved domain"}
                       </span>
                       .
                     </div>

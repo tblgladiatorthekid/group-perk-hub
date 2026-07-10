@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
-import { supabase } from "@/integrations/supabase/client";
+import { useClerk } from "@clerk/tanstack-react-start";
 import { Logo } from "@/components/perk/Logo";
 import { Button } from "@/components/ui/button";
 import { useQueryClient } from "@tanstack/react-query";
@@ -23,12 +23,13 @@ export function DashboardShell({
 }) {
   const navigate = useNavigate();
   const qc = useQueryClient();
+  const { signOut: clerkSignOut } = useClerk();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
 
   const signOut = async () => {
     await qc.cancelQueries();
     qc.clear();
-    await supabase.auth.signOut();
+    await clerkSignOut();
     navigate({ to: "/auth", replace: true });
   };
 

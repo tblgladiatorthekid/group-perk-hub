@@ -1,7 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { Building2, LayoutDashboard, Receipt, Tag } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+import type { Brand } from "@perkhub/shared";
+import { apiClient } from "@/lib/api-client";
 import { DashboardShell, EmptyState } from "@/components/perk/DashboardShell";
 import { Button } from "@/components/ui/button";
 
@@ -17,16 +18,10 @@ const nav = [
 ];
 
 function BrandHome() {
-  const { data: brands } = useQuery({
-    queryKey: ["my-brands"],
-    queryFn: async () => {
-      const { data, error } = await supabase.from("brands").select("*").order("created_at", { ascending: false });
-      if (error) throw error;
-      return data;
-    },
+  const { data: myBrand } = useQuery({
+    queryKey: ["my-brand"],
+    queryFn: () => apiClient<Brand | null>("/brands/mine"),
   });
-
-  const myBrand = brands?.[0];
 
   return (
     <DashboardShell
