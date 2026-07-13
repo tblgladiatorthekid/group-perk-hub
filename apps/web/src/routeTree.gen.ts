@@ -15,11 +15,16 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedBrandRouteImport } from './routes/_authenticated.brand'
 import { Route as AuthenticatedAppRouteImport } from './routes/_authenticated.app'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated.admin'
+import { Route as AuthenticatedBrandIndexRouteImport } from './routes/_authenticated.brand.index'
 import { Route as AuthenticatedAppIndexRouteImport } from './routes/_authenticated.app.index'
 import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated.admin.index'
+import { Route as AuthenticatedBrandDealsRouteImport } from './routes/_authenticated.brand.deals'
+import { Route as AuthenticatedBrandApplyRouteImport } from './routes/_authenticated.brand.apply'
 import { Route as AuthenticatedAppVerifyRouteImport } from './routes/_authenticated.app.verify'
 import { Route as AuthenticatedAppMembershipRouteImport } from './routes/_authenticated.app.membership'
 import { Route as AuthenticatedAdminVerificationsRouteImport } from './routes/_authenticated.admin.verifications'
+import { Route as AuthenticatedAdminDealsRouteImport } from './routes/_authenticated.admin.deals'
+import { Route as AuthenticatedAdminBrandsRouteImport } from './routes/_authenticated.admin.brands'
 
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
@@ -50,6 +55,11 @@ const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
   path: '/admin',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedBrandIndexRoute = AuthenticatedBrandIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AuthenticatedBrandRoute,
+} as any)
 const AuthenticatedAppIndexRoute = AuthenticatedAppIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -59,6 +69,16 @@ const AuthenticatedAdminIndexRoute = AuthenticatedAdminIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => AuthenticatedAdminRoute,
+} as any)
+const AuthenticatedBrandDealsRoute = AuthenticatedBrandDealsRouteImport.update({
+  id: '/deals',
+  path: '/deals',
+  getParentRoute: () => AuthenticatedBrandRoute,
+} as any)
+const AuthenticatedBrandApplyRoute = AuthenticatedBrandApplyRouteImport.update({
+  id: '/apply',
+  path: '/apply',
+  getParentRoute: () => AuthenticatedBrandRoute,
 } as any)
 const AuthenticatedAppVerifyRoute = AuthenticatedAppVerifyRouteImport.update({
   id: '/verify',
@@ -77,28 +97,48 @@ const AuthenticatedAdminVerificationsRoute =
     path: '/verifications',
     getParentRoute: () => AuthenticatedAdminRoute,
   } as any)
+const AuthenticatedAdminDealsRoute = AuthenticatedAdminDealsRouteImport.update({
+  id: '/deals',
+  path: '/deals',
+  getParentRoute: () => AuthenticatedAdminRoute,
+} as any)
+const AuthenticatedAdminBrandsRoute =
+  AuthenticatedAdminBrandsRouteImport.update({
+    id: '/brands',
+    path: '/brands',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/admin': typeof AuthenticatedAdminRouteWithChildren
   '/app': typeof AuthenticatedAppRouteWithChildren
-  '/brand': typeof AuthenticatedBrandRoute
+  '/brand': typeof AuthenticatedBrandRouteWithChildren
+  '/admin/brands': typeof AuthenticatedAdminBrandsRoute
+  '/admin/deals': typeof AuthenticatedAdminDealsRoute
   '/admin/verifications': typeof AuthenticatedAdminVerificationsRoute
   '/app/membership': typeof AuthenticatedAppMembershipRoute
   '/app/verify': typeof AuthenticatedAppVerifyRoute
+  '/brand/apply': typeof AuthenticatedBrandApplyRoute
+  '/brand/deals': typeof AuthenticatedBrandDealsRoute
   '/admin/': typeof AuthenticatedAdminIndexRoute
   '/app/': typeof AuthenticatedAppIndexRoute
+  '/brand/': typeof AuthenticatedBrandIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
-  '/brand': typeof AuthenticatedBrandRoute
+  '/admin/brands': typeof AuthenticatedAdminBrandsRoute
+  '/admin/deals': typeof AuthenticatedAdminDealsRoute
   '/admin/verifications': typeof AuthenticatedAdminVerificationsRoute
   '/app/membership': typeof AuthenticatedAppMembershipRoute
   '/app/verify': typeof AuthenticatedAppVerifyRoute
+  '/brand/apply': typeof AuthenticatedBrandApplyRoute
+  '/brand/deals': typeof AuthenticatedBrandDealsRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
   '/app': typeof AuthenticatedAppIndexRoute
+  '/brand': typeof AuthenticatedBrandIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -107,12 +147,17 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRouteWithChildren
   '/_authenticated/app': typeof AuthenticatedAppRouteWithChildren
-  '/_authenticated/brand': typeof AuthenticatedBrandRoute
+  '/_authenticated/brand': typeof AuthenticatedBrandRouteWithChildren
+  '/_authenticated/admin/brands': typeof AuthenticatedAdminBrandsRoute
+  '/_authenticated/admin/deals': typeof AuthenticatedAdminDealsRoute
   '/_authenticated/admin/verifications': typeof AuthenticatedAdminVerificationsRoute
   '/_authenticated/app/membership': typeof AuthenticatedAppMembershipRoute
   '/_authenticated/app/verify': typeof AuthenticatedAppVerifyRoute
+  '/_authenticated/brand/apply': typeof AuthenticatedBrandApplyRoute
+  '/_authenticated/brand/deals': typeof AuthenticatedBrandDealsRoute
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
   '/_authenticated/app/': typeof AuthenticatedAppIndexRoute
+  '/_authenticated/brand/': typeof AuthenticatedBrandIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -122,21 +167,30 @@ export interface FileRouteTypes {
     | '/admin'
     | '/app'
     | '/brand'
+    | '/admin/brands'
+    | '/admin/deals'
     | '/admin/verifications'
     | '/app/membership'
     | '/app/verify'
+    | '/brand/apply'
+    | '/brand/deals'
     | '/admin/'
     | '/app/'
+    | '/brand/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/auth'
-    | '/brand'
+    | '/admin/brands'
+    | '/admin/deals'
     | '/admin/verifications'
     | '/app/membership'
     | '/app/verify'
+    | '/brand/apply'
+    | '/brand/deals'
     | '/admin'
     | '/app'
+    | '/brand'
   id:
     | '__root__'
     | '/'
@@ -145,11 +199,16 @@ export interface FileRouteTypes {
     | '/_authenticated/admin'
     | '/_authenticated/app'
     | '/_authenticated/brand'
+    | '/_authenticated/admin/brands'
+    | '/_authenticated/admin/deals'
     | '/_authenticated/admin/verifications'
     | '/_authenticated/app/membership'
     | '/_authenticated/app/verify'
+    | '/_authenticated/brand/apply'
+    | '/_authenticated/brand/deals'
     | '/_authenticated/admin/'
     | '/_authenticated/app/'
+    | '/_authenticated/brand/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -202,6 +261,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/brand/': {
+      id: '/_authenticated/brand/'
+      path: '/'
+      fullPath: '/brand/'
+      preLoaderRoute: typeof AuthenticatedBrandIndexRouteImport
+      parentRoute: typeof AuthenticatedBrandRoute
+    }
     '/_authenticated/app/': {
       id: '/_authenticated/app/'
       path: '/'
@@ -215,6 +281,20 @@ declare module '@tanstack/react-router' {
       fullPath: '/admin/'
       preLoaderRoute: typeof AuthenticatedAdminIndexRouteImport
       parentRoute: typeof AuthenticatedAdminRoute
+    }
+    '/_authenticated/brand/deals': {
+      id: '/_authenticated/brand/deals'
+      path: '/deals'
+      fullPath: '/brand/deals'
+      preLoaderRoute: typeof AuthenticatedBrandDealsRouteImport
+      parentRoute: typeof AuthenticatedBrandRoute
+    }
+    '/_authenticated/brand/apply': {
+      id: '/_authenticated/brand/apply'
+      path: '/apply'
+      fullPath: '/brand/apply'
+      preLoaderRoute: typeof AuthenticatedBrandApplyRouteImport
+      parentRoute: typeof AuthenticatedBrandRoute
     }
     '/_authenticated/app/verify': {
       id: '/_authenticated/app/verify'
@@ -237,15 +317,33 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminVerificationsRouteImport
       parentRoute: typeof AuthenticatedAdminRoute
     }
+    '/_authenticated/admin/deals': {
+      id: '/_authenticated/admin/deals'
+      path: '/deals'
+      fullPath: '/admin/deals'
+      preLoaderRoute: typeof AuthenticatedAdminDealsRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
+    '/_authenticated/admin/brands': {
+      id: '/_authenticated/admin/brands'
+      path: '/brands'
+      fullPath: '/admin/brands'
+      preLoaderRoute: typeof AuthenticatedAdminBrandsRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
   }
 }
 
 interface AuthenticatedAdminRouteChildren {
+  AuthenticatedAdminBrandsRoute: typeof AuthenticatedAdminBrandsRoute
+  AuthenticatedAdminDealsRoute: typeof AuthenticatedAdminDealsRoute
   AuthenticatedAdminVerificationsRoute: typeof AuthenticatedAdminVerificationsRoute
   AuthenticatedAdminIndexRoute: typeof AuthenticatedAdminIndexRoute
 }
 
 const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
+  AuthenticatedAdminBrandsRoute: AuthenticatedAdminBrandsRoute,
+  AuthenticatedAdminDealsRoute: AuthenticatedAdminDealsRoute,
   AuthenticatedAdminVerificationsRoute: AuthenticatedAdminVerificationsRoute,
   AuthenticatedAdminIndexRoute: AuthenticatedAdminIndexRoute,
 }
@@ -268,16 +366,31 @@ const AuthenticatedAppRouteChildren: AuthenticatedAppRouteChildren = {
 const AuthenticatedAppRouteWithChildren =
   AuthenticatedAppRoute._addFileChildren(AuthenticatedAppRouteChildren)
 
+interface AuthenticatedBrandRouteChildren {
+  AuthenticatedBrandApplyRoute: typeof AuthenticatedBrandApplyRoute
+  AuthenticatedBrandDealsRoute: typeof AuthenticatedBrandDealsRoute
+  AuthenticatedBrandIndexRoute: typeof AuthenticatedBrandIndexRoute
+}
+
+const AuthenticatedBrandRouteChildren: AuthenticatedBrandRouteChildren = {
+  AuthenticatedBrandApplyRoute: AuthenticatedBrandApplyRoute,
+  AuthenticatedBrandDealsRoute: AuthenticatedBrandDealsRoute,
+  AuthenticatedBrandIndexRoute: AuthenticatedBrandIndexRoute,
+}
+
+const AuthenticatedBrandRouteWithChildren =
+  AuthenticatedBrandRoute._addFileChildren(AuthenticatedBrandRouteChildren)
+
 interface AuthenticatedRouteChildren {
   AuthenticatedAdminRoute: typeof AuthenticatedAdminRouteWithChildren
   AuthenticatedAppRoute: typeof AuthenticatedAppRouteWithChildren
-  AuthenticatedBrandRoute: typeof AuthenticatedBrandRoute
+  AuthenticatedBrandRoute: typeof AuthenticatedBrandRouteWithChildren
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedAdminRoute: AuthenticatedAdminRouteWithChildren,
   AuthenticatedAppRoute: AuthenticatedAppRouteWithChildren,
-  AuthenticatedBrandRoute: AuthenticatedBrandRoute,
+  AuthenticatedBrandRoute: AuthenticatedBrandRouteWithChildren,
 }
 
 const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(
