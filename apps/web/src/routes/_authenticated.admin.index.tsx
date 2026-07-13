@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { BarChart3, LayoutDashboard, ShieldCheck, Store, Users, Wallet } from "lucide-react";
+import { BarChart3, LayoutDashboard, ShieldCheck, Store, Tag, Users, Wallet } from "lucide-react";
 import { apiClient } from "@/lib/api-client";
 import { DashboardShell } from "@/components/perk/DashboardShell";
 import { Button } from "@/components/ui/button";
@@ -12,7 +12,8 @@ export const Route = createFileRoute("/_authenticated/admin/")({
 const nav = [
   { to: "/admin", label: "Overview", icon: <LayoutDashboard className="h-4 w-4" /> },
   { to: "/admin/verifications", label: "Verifications", icon: <ShieldCheck className="h-4 w-4" /> },
-  { to: "/admin", label: "Brands (soon)", icon: <Store className="h-4 w-4" /> },
+  { to: "/admin/brands", label: "Brands", icon: <Store className="h-4 w-4" /> },
+  { to: "/admin/deals", label: "Deals", icon: <Tag className="h-4 w-4" /> },
   { to: "/admin", label: "Groups (soon)", icon: <Users className="h-4 w-4" /> },
   { to: "/admin", label: "Transactions (soon)", icon: <BarChart3 className="h-4 w-4" /> },
   { to: "/admin", label: "Commissions (soon)", icon: <Wallet className="h-4 w-4" /> },
