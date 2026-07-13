@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { z } from "zod";
 import { SignIn, SignUp, useAuth } from "@clerk/tanstack-react-start";
 
@@ -33,10 +33,19 @@ function AuthPage() {
   const search = Route.useSearch();
   const navigate = useNavigate();
   const { isSignedIn } = useAuth();
-  const [mode, setMode] = useState<"signin" | "signup">(search.mode ?? "signin");
+  const mode = search.mode ?? "signin";
 
   const defaultRedirect = search.role === "brand" ? "/brand" : "/app";
   const redirectTo = search.redirect ?? defaultRedirect;
+
+  // Preserve role/redirect context across Clerk's own sign-in/sign-up
+  // navigation links, not just our own toggle button below.
+  const authHref = (targetMode: "signin" | "signup") => {
+    const params = new URLSearchParams({ mode: targetMode });
+    if (search.role) params.set("role", search.role);
+    if (search.redirect) params.set("redirect", search.redirect);
+    return `/auth?${params.toString()}`;
+  };
 
   // If already signed in, bounce.
   useEffect(() => {
@@ -75,7 +84,7 @@ function AuthPage() {
             {mode === "signup" ? (
               <SignUp
                 routing="hash"
-                signInUrl="/auth"
+                signInUrl={authHref("signin")}
                 fallbackRedirectUrl={redirectTo}
                 unsafeMetadata={{ intended_role: search.role ?? "consumer" }}
                 appearance={clerkAppearance}
@@ -83,7 +92,7 @@ function AuthPage() {
             ) : (
               <SignIn
                 routing="hash"
-                signUpUrl="/auth"
+                signUpUrl={authHref("signup")}
                 fallbackRedirectUrl={redirectTo}
                 appearance={clerkAppearance}
               />
@@ -94,7 +103,13 @@ function AuthPage() {
             {mode === "signup" ? "Already have an account?" : "New to PerkHub?"}{" "}
             <button
               type="button"
-              onClick={() => setMode(mode === "signup" ? "signin" : "signup")}
+              onClick={() =>
+                navigate({
+                  to: "/auth",
+                  search: { ...search, mode: mode === "signup" ? "signin" : "signup" },
+                  replace: true,
+                })
+              }
               className="font-medium text-primary hover:underline"
             >
               {mode === "signup" ? "Sign in" : "Create one"}

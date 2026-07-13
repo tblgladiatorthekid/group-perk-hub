@@ -28,7 +28,8 @@ import {
 export * from "./enums";
 
 export const profiles = pgTable("profiles", {
-  id: uuid("id").primaryKey(),
+  // Clerk user id (e.g. "user_2NNs82h..."), not a UUID — must stay text.
+  id: text("id").primaryKey(),
   fullName: text("full_name"),
   phone: text("phone"),
   state: text("state"),
@@ -42,7 +43,7 @@ export const userRoles = pgTable(
   "user_roles",
   {
     id: uuid("id").defaultRandom().primaryKey(),
-    userId: uuid("user_id").notNull(),
+    userId: text("user_id").notNull(),
     role: appRoleEnum("role").notNull(),
     createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
   },
@@ -82,7 +83,7 @@ export const groupWhitelist = pgTable(
 
 export const userMemberships = pgTable("user_memberships", {
   id: uuid("id").defaultRandom().primaryKey(),
-  userId: uuid("user_id").notNull(),
+  userId: text("user_id").notNull(),
   groupId: uuid("group_id")
     .notNull()
     .references(() => affiliationGroups.id, { onDelete: "restrict" }),
@@ -100,7 +101,7 @@ export const userMemberships = pgTable("user_memberships", {
 
 export const brands = pgTable("brands", {
   id: uuid("id").defaultRandom().primaryKey(),
-  ownerUserId: uuid("owner_user_id").notNull(),
+  ownerUserId: text("owner_user_id").notNull(),
   name: text("name").notNull(),
   slug: text("slug").unique(),
   cacNumber: text("cac_number"),
@@ -145,7 +146,7 @@ export const deals = pgTable("deals", {
 export const savedDeals = pgTable(
   "saved_deals",
   {
-    userId: uuid("user_id").notNull(),
+    userId: text("user_id").notNull(),
     dealId: uuid("deal_id")
       .notNull()
       .references(() => deals.id, { onDelete: "cascade" }),
@@ -158,7 +159,7 @@ export const savedDeals = pgTable(
 
 export const transactions = pgTable("transactions", {
   id: uuid("id").defaultRandom().primaryKey(),
-  userId: uuid("user_id").notNull(),
+  userId: text("user_id").notNull(),
   dealId: uuid("deal_id")
     .notNull()
     .references(() => deals.id, { onDelete: "restrict" }),
