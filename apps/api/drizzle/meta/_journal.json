@@ -8,6 +8,13 @@
       "when": 1783090173649,
       "tag": "0000_volatile_scorpion",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1783937406077,
+      "tag": "0001_ambitious_shotgun",
+      "breakpoints": true
     }
   ]
 }
