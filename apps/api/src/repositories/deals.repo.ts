@@ -12,9 +12,9 @@ export async function listDeals(db: Db, filter?: ListDealsFilter) {
   const conditions = [];
   if (filter?.status) conditions.push(eq(deals.status, filter.status));
   if (filter?.brandId) conditions.push(eq(deals.brandId, filter.brandId));
-  const query = db.select().from(deals);
-  if (conditions.length > 0) query.where(and(...conditions));
-  return query.orderBy(desc(deals.createdAt));
+  const base = db.select().from(deals).$dynamic();
+  const filtered = conditions.length > 0 ? base.where(and(...conditions)) : base;
+  return filtered.orderBy(desc(deals.createdAt));
 }
 
 export async function getDeal(db: Db, id: string) {
