@@ -20,7 +20,10 @@ brandRoutes.get("/", async (c) => {
   if (!sessionToken) return c.json({ error: "Unauthorized" }, 401);
   try {
     const { createClerkClient } = await import("@clerk/backend");
-    const clerkClient = createClerkClient({ secretKey: process.env.CLERK_SECRET_KEY! });
+    const clerkClient = createClerkClient({
+      secretKey: process.env.CLERK_SECRET_KEY!,
+      publishableKey: process.env.CLERK_PUBLISHABLE_KEY!,
+    });
     const auth = await clerkClient.authenticateRequest(c.req.raw);
     if (!auth.isSignedIn) return c.json({ error: "Unauthorized" }, 401);
     const uid = auth.toAuth().userId!;
