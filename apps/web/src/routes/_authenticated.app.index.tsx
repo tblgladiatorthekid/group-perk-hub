@@ -15,7 +15,7 @@ const nav = [
   { to: "/app", label: "Overview", icon: <Home className="h-4 w-4" /> },
   { to: "/app/verify", label: "Verify membership", icon: <BadgeCheck className="h-4 w-4" /> },
   { to: "/app/membership", label: "My card", icon: <Ticket className="h-4 w-4" /> },
-  { to: "/app", label: "Deals (soon)", icon: <Sparkles className="h-4 w-4" /> },
+  { to: "/app/deals", label: "Deals", icon: <Sparkles className="h-4 w-4" /> },
   { to: "/app", label: "Profile (soon)", icon: <User className="h-4 w-4" /> },
 ];
 

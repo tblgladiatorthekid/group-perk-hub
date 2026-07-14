@@ -22,6 +22,7 @@ import { Route as AuthenticatedBrandDealsRouteImport } from './routes/_authentic
 import { Route as AuthenticatedBrandApplyRouteImport } from './routes/_authenticated.brand.apply'
 import { Route as AuthenticatedAppVerifyRouteImport } from './routes/_authenticated.app.verify'
 import { Route as AuthenticatedAppMembershipRouteImport } from './routes/_authenticated.app.membership'
+import { Route as AuthenticatedAppDealsRouteImport } from './routes/_authenticated.app.deals'
 import { Route as AuthenticatedAdminVerificationsRouteImport } from './routes/_authenticated.admin.verifications'
 import { Route as AuthenticatedAdminDealsRouteImport } from './routes/_authenticated.admin.deals'
 import { Route as AuthenticatedAdminBrandsRouteImport } from './routes/_authenticated.admin.brands'
@@ -91,6 +92,11 @@ const AuthenticatedAppMembershipRoute =
     path: '/membership',
     getParentRoute: () => AuthenticatedAppRoute,
   } as any)
+const AuthenticatedAppDealsRoute = AuthenticatedAppDealsRouteImport.update({
+  id: '/deals',
+  path: '/deals',
+  getParentRoute: () => AuthenticatedAppRoute,
+} as any)
 const AuthenticatedAdminVerificationsRoute =
   AuthenticatedAdminVerificationsRouteImport.update({
     id: '/verifications',
@@ -118,6 +124,7 @@ export interface FileRoutesByFullPath {
   '/admin/brands': typeof AuthenticatedAdminBrandsRoute
   '/admin/deals': typeof AuthenticatedAdminDealsRoute
   '/admin/verifications': typeof AuthenticatedAdminVerificationsRoute
+  '/app/deals': typeof AuthenticatedAppDealsRoute
   '/app/membership': typeof AuthenticatedAppMembershipRoute
   '/app/verify': typeof AuthenticatedAppVerifyRoute
   '/brand/apply': typeof AuthenticatedBrandApplyRoute
@@ -132,6 +139,7 @@ export interface FileRoutesByTo {
   '/admin/brands': typeof AuthenticatedAdminBrandsRoute
   '/admin/deals': typeof AuthenticatedAdminDealsRoute
   '/admin/verifications': typeof AuthenticatedAdminVerificationsRoute
+  '/app/deals': typeof AuthenticatedAppDealsRoute
   '/app/membership': typeof AuthenticatedAppMembershipRoute
   '/app/verify': typeof AuthenticatedAppVerifyRoute
   '/brand/apply': typeof AuthenticatedBrandApplyRoute
@@ -151,6 +159,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/brands': typeof AuthenticatedAdminBrandsRoute
   '/_authenticated/admin/deals': typeof AuthenticatedAdminDealsRoute
   '/_authenticated/admin/verifications': typeof AuthenticatedAdminVerificationsRoute
+  '/_authenticated/app/deals': typeof AuthenticatedAppDealsRoute
   '/_authenticated/app/membership': typeof AuthenticatedAppMembershipRoute
   '/_authenticated/app/verify': typeof AuthenticatedAppVerifyRoute
   '/_authenticated/brand/apply': typeof AuthenticatedBrandApplyRoute
@@ -170,6 +179,7 @@ export interface FileRouteTypes {
     | '/admin/brands'
     | '/admin/deals'
     | '/admin/verifications'
+    | '/app/deals'
     | '/app/membership'
     | '/app/verify'
     | '/brand/apply'
@@ -184,6 +194,7 @@ export interface FileRouteTypes {
     | '/admin/brands'
     | '/admin/deals'
     | '/admin/verifications'
+    | '/app/deals'
     | '/app/membership'
     | '/app/verify'
     | '/brand/apply'
@@ -202,6 +213,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/brands'
     | '/_authenticated/admin/deals'
     | '/_authenticated/admin/verifications'
+    | '/_authenticated/app/deals'
     | '/_authenticated/app/membership'
     | '/_authenticated/app/verify'
     | '/_authenticated/brand/apply'
@@ -310,6 +322,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAppMembershipRouteImport
       parentRoute: typeof AuthenticatedAppRoute
     }
+    '/_authenticated/app/deals': {
+      id: '/_authenticated/app/deals'
+      path: '/deals'
+      fullPath: '/app/deals'
+      preLoaderRoute: typeof AuthenticatedAppDealsRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
+    }
     '/_authenticated/admin/verifications': {
       id: '/_authenticated/admin/verifications'
       path: '/verifications'
@@ -352,12 +371,14 @@ const AuthenticatedAdminRouteWithChildren =
   AuthenticatedAdminRoute._addFileChildren(AuthenticatedAdminRouteChildren)
 
 interface AuthenticatedAppRouteChildren {
+  AuthenticatedAppDealsRoute: typeof AuthenticatedAppDealsRoute
   AuthenticatedAppMembershipRoute: typeof AuthenticatedAppMembershipRoute
   AuthenticatedAppVerifyRoute: typeof AuthenticatedAppVerifyRoute
   AuthenticatedAppIndexRoute: typeof AuthenticatedAppIndexRoute
 }
 
 const AuthenticatedAppRouteChildren: AuthenticatedAppRouteChildren = {
+  AuthenticatedAppDealsRoute: AuthenticatedAppDealsRoute,
   AuthenticatedAppMembershipRoute: AuthenticatedAppMembershipRoute,
   AuthenticatedAppVerifyRoute: AuthenticatedAppVerifyRoute,
   AuthenticatedAppIndexRoute: AuthenticatedAppIndexRoute,
