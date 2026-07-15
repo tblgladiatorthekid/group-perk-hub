@@ -22,6 +22,8 @@ const nav = [
   { to: "/admin", label: "Brands (soon)", icon: <Store className="h-4 w-4" /> },
   { to: "/admin/groups", label: "Groups", icon: <Users className="h-4 w-4" /> },
   { to: "/admin/analytics", label: "Analytics", icon: <BarChart3 className="h-4 w-4" /> },
+  { to: "/brand/transactions", label: "Transactions", icon: <BarChart3 className="h-4 w-4" /> },
+  { to: "/brand/commissions", label: "Commissions", icon: <Wallet className="h-4 w-4" /> },
 ];
 
 type Status = MembershipStatus;
