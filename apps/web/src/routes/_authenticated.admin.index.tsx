@@ -14,7 +14,7 @@ const nav = [
   { to: "/admin/verifications", label: "Verifications", icon: <ShieldCheck className="h-4 w-4" /> },
   { to: "/admin/brands", label: "Brands", icon: <Store className="h-4 w-4" /> },
   { to: "/admin/deals", label: "Deals", icon: <Tag className="h-4 w-4" /> },
-  { to: "/admin", label: "Groups (soon)", icon: <Users className="h-4 w-4" /> },
+  { to: "/admin/groups", label: "Groups", icon: <Users className="h-4 w-4" /> },
   { to: "/admin", label: "Transactions (soon)", icon: <BarChart3 className="h-4 w-4" /> },
   { to: "/admin", label: "Commissions (soon)", icon: <Wallet className="h-4 w-4" /> },
 ];

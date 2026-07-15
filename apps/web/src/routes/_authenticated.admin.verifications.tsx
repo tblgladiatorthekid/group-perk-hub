@@ -20,7 +20,7 @@ const nav = [
   { to: "/admin", label: "Overview", icon: <LayoutDashboard className="h-4 w-4" /> },
   { to: "/admin/verifications", label: "Verifications", icon: <ShieldCheck className="h-4 w-4" /> },
   { to: "/admin", label: "Brands (soon)", icon: <Store className="h-4 w-4" /> },
-  { to: "/admin", label: "Groups (soon)", icon: <Users className="h-4 w-4" /> },
+  { to: "/admin/groups", label: "Groups", icon: <Users className="h-4 w-4" /> },
   { to: "/admin", label: "Transactions (soon)", icon: <BarChart3 className="h-4 w-4" /> },
   { to: "/admin", label: "Commissions (soon)", icon: <Wallet className="h-4 w-4" /> },
 ];
