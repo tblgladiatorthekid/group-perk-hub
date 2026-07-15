@@ -7,9 +7,34 @@ import * as userRolesRepo from "../repositories/userRoles.repo";
 
 export const groupRoutes = new Hono();
 
+// Public list: only active by default. `?status=all` requires admin.
 groupRoutes.get("/", async (c) => {
-  const groups = await groupsRepo.listGroups(db);
-  return c.json(groups.filter((g) => g.active));
+  const status = c.req.query("status") ?? "active";
+  const all = await groupsRepo.listGroups(db);
+
+  if (status === "active") {
+    return c.json(all.filter((g) => g.active));
+  }
+
+  // Non-public statuses require admin
+  const sessionToken = c.req.header("Authorization")?.replace("Bearer ", "");
+  if (!sessionToken) return c.json({ error: "Unauthorized" }, 401);
+  try {
+    const { createClerkClient } = await import("@clerk/backend");
+    const clerkClient = createClerkClient({
+      secretKey: process.env.CLERK_SECRET_KEY!,
+      publishableKey: process.env.CLERK_PUBLISHABLE_KEY!,
+    });
+    const auth = await clerkClient.authenticateRequest(c.req.raw);
+    if (!auth.isSignedIn) return c.json({ error: "Unauthorized" }, 401);
+    const uid = auth.toAuth().userId!;
+    const isAdmin = await userRolesRepo.hasRole(db, uid, "admin");
+    if (!isAdmin) return c.json({ error: "Forbidden" }, 403);
+  } catch {
+    return c.json({ error: "Unauthorized" }, 401);
+  }
+
+  return c.json(all);
 });
 
 groupRoutes.get("/:id", async (c) => {
