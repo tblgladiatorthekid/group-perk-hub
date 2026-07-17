@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { BarChart3, LayoutDashboard, ShieldCheck, Store, Tag, Users, Wallet } from "lucide-react";
+import { BarChart3, LayoutDashboard, ShieldCheck, Store, Tag, Users } from "lucide-react";
 import { apiClient } from "@/lib/api-client";
 import { DashboardShell } from "@/components/perk/DashboardShell";
 import { Button } from "@/components/ui/button";
@@ -15,8 +15,7 @@ const nav = [
   { to: "/admin/brands", label: "Brands", icon: <Store className="h-4 w-4" /> },
   { to: "/admin/deals", label: "Deals", icon: <Tag className="h-4 w-4" /> },
   { to: "/admin/groups", label: "Groups", icon: <Users className="h-4 w-4" /> },
-  { to: "/admin", label: "Transactions (soon)", icon: <BarChart3 className="h-4 w-4" /> },
-  { to: "/admin", label: "Commissions (soon)", icon: <Wallet className="h-4 w-4" /> },
+  { to: "/admin/analytics", label: "Analytics", icon: <BarChart3 className="h-4 w-4" /> },
 ];
 
 interface AdminStats {

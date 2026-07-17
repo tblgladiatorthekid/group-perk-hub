@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { z } from "zod";
 import { SignIn, SignUp, useAuth } from "@clerk/tanstack-react-start";
 import { BadgeCheck, Building2, ShieldCheck } from "lucide-react";
@@ -72,24 +72,31 @@ function AuthPage() {
     return `/auth?${params.toString()}`;
   };
 
+  const resolveRoles = useCallback(async (retries = 5): Promise<void> => {
+    try {
+      const roles = await apiClient<{ role: AppRole }[]>("/roles/me");
+      const dest = homePathFor(primaryRole(roles.map((r) => r.role)));
+      navigate({ to: dest, replace: true });
+    } catch {
+      if (retries > 0) {
+        await new Promise((r) => setTimeout(r, 1200));
+        return resolveRoles(retries - 1);
+      }
+      navigate({ to: "/app", replace: true });
+    }
+  }, [navigate]);
+
   useEffect(() => {
     if (!isSignedIn) return;
 
-    // If a hard redirect target was provided in the URL, honour it directly.
     if (search.redirect) {
       navigate({ to: search.redirect, replace: true });
       return;
     }
 
-    // Otherwise fetch the user's roles and route to the right dashboard.
     setResolving(true);
-    apiClient<{ role: AppRole }[]>("/roles/me")
-      .then((roles) => {
-        const dest = homePathFor(primaryRole(roles.map((r) => r.role)));
-        navigate({ to: dest, replace: true });
-      })
-      .catch(() => navigate({ to: "/app", replace: true }));
-  }, [isSignedIn, navigate, search.redirect]);
+    resolveRoles();
+  }, [isSignedIn, navigate, search.redirect, resolveRoles]);
 
   if (resolving) return <RoleRedirect />;
 
