@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { BarChart3, LayoutDashboard, ShieldCheck, Store, Users, ExternalLink, Loader2 } from "lucide-react";
+import { BarChart3, LayoutDashboard, ShieldCheck, Store, Users, ExternalLink, Loader2, Wallet } from "lucide-react";
 import type { AffiliationGroup, MembershipStatus, Profile, UserMembership } from "@perkhub/shared";
 import { apiClient } from "@/lib/api-client";
 import { DashboardShell, EmptyState } from "@/components/perk/DashboardShell";
