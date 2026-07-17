@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { Building2, LayoutDashboard, Receipt, Tag } from "lucide-react";
+import { Building2, LayoutDashboard, Receipt, Tag, Wallet } from "lucide-react";
 import type { Brand, Deal } from "@perkhub/shared";
 import { apiClient } from "@/lib/api-client";
 import { DashboardShell, EmptyState } from "@/components/perk/DashboardShell";
@@ -15,7 +15,8 @@ const nav = [
   { to: "/brand", label: "Overview", icon: <LayoutDashboard className="h-4 w-4" /> },
   { to: "/brand/apply", label: "Business profile", icon: <Building2 className="h-4 w-4" /> },
   { to: "/brand/deals", label: "Deals", icon: <Tag className="h-4 w-4" /> },
-  { to: "/brand", label: "Redemptions (soon)", icon: <Receipt className="h-4 w-4" /> },
+  { to: "/brand/transactions", label: "Transactions", icon: <Receipt className="h-4 w-4" /> },
+  { to: "/brand/commissions", label: "Commissions", icon: <Wallet className="h-4 w-4" /> },
 ];
 
 function BrandHome() {
