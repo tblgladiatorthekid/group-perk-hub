@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { BarChart3, LayoutDashboard, ShieldCheck, Store, Users, ExternalLink, Loader2 } from "lucide-react";
+import { BarChart3, LayoutDashboard, ShieldCheck, Store, Users, ExternalLink, Loader2, Wallet } from "lucide-react";
 import type { AffiliationGroup, MembershipStatus, Profile, UserMembership } from "@perkhub/shared";
 import { apiClient } from "@/lib/api-client";
 import { DashboardShell, EmptyState } from "@/components/perk/DashboardShell";
@@ -22,6 +22,8 @@ const nav = [
   { to: "/admin", label: "Brands (soon)", icon: <Store className="h-4 w-4" /> },
   { to: "/admin/groups", label: "Groups", icon: <Users className="h-4 w-4" /> },
   { to: "/admin/analytics", label: "Analytics", icon: <BarChart3 className="h-4 w-4" /> },
+  { to: "/brand/transactions", label: "Transactions", icon: <BarChart3 className="h-4 w-4" /> },
+  { to: "/brand/commissions", label: "Commissions", icon: <Wallet className="h-4 w-4" /> },
 ];
 
 type Status = MembershipStatus;
