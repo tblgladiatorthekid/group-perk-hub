@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { BarChart3, LayoutDashboard, ShieldCheck, Store, Tag, Users } from "lucide-react";
+import { BarChart3, LayoutDashboard, ShieldCheck, Store, Tag, Users, Wallet } from "lucide-react";
 import { apiClient } from "@/lib/api-client";
 import { DashboardShell } from "@/components/perk/DashboardShell";
 import { Button } from "@/components/ui/button";
