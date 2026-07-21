@@ -118,7 +118,10 @@ function AdminGroups() {
         description: v.description?.trim() ? v.description.trim() : null,
         verificationMethods: v.verificationMethods,
         emailDomains: v.emailDomains
-          ? v.emailDomains.split(",").map((d) => d.trim()).filter(Boolean)
+          ? v.emailDomains
+              .split(",")
+              .map((d) => d.trim())
+              .filter(Boolean)
           : [],
         badgeValidityMonths: v.badgeValidityMonths,
       };
@@ -189,7 +192,9 @@ function AdminGroups() {
               <div>
                 <div className="flex items-center gap-2">
                   <div className="font-display text-base font-semibold">{g.name}</div>
-                  <Badge variant="outline" className="capitalize">{g.type}</Badge>
+                  <Badge variant="outline" className="capitalize">
+                    {g.type}
+                  </Badge>
                   <Badge variant={g.active ? "default" : "secondary"}>
                     {g.active ? "Active" : "Inactive"}
                   </Badge>
@@ -210,7 +215,8 @@ function AdminGroups() {
                   {g.emailDomains.length > 0
                     ? `Domains: ${g.emailDomains.join(", ")}`
                     : "No email domains"}{" "}
-                  · Badge valid {g.badgeValidityMonths} month{g.badgeValidityMonths === 1 ? "" : "s"}
+                  · Badge valid {g.badgeValidityMonths} month
+                  {g.badgeValidityMonths === 1 ? "" : "s"}
                 </div>
               </div>
               <div className="flex flex-wrap gap-2">

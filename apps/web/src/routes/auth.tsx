@@ -11,16 +11,44 @@ import { primaryRole, homePathFor, type AppRole } from "@/hooks/use-auth";
 
 const searchSchema = z.object({
   mode: z.enum(["signin", "signup"]).optional(),
-  role: z.enum(["consumer", "brand_partner", "brand_manager", "super_admin", "affiliation_admin", "commerce_admin"]).optional(),
+  role: z
+    .enum([
+      "consumer",
+      "brand",
+      "brand_partner",
+      "brand_manager",
+      "super_admin",
+      "affiliation_admin",
+      "commerce_admin",
+    ])
+    .optional(),
   redirect: z.string().optional(),
 });
 
+function normalizeRole(role: string | undefined): SignupRole | undefined {
+  if (!role) return undefined;
+  if (role === "brand") return "brand_partner";
+  return role as SignupRole;
+}
+
 export const Route = createFileRoute("/auth")({
-  validateSearch: (s) => searchSchema.parse(s),
+  validateSearch: (s) => {
+    const parsed = searchSchema.parse(s);
+    return {
+      ...parsed,
+      role: normalizeRole(parsed.role),
+    };
+  },
   component: AuthPage,
 });
 
-type SignupRole = "consumer" | "brand_partner" | "brand_manager" | "super_admin" | "affiliation_admin" | "commerce_admin";
+type SignupRole =
+  | "consumer"
+  | "brand_partner"
+  | "brand_manager"
+  | "super_admin"
+  | "affiliation_admin"
+  | "commerce_admin";
 
 const roleCards: {
   value: SignupRole;
@@ -93,19 +121,22 @@ function AuthPage() {
     return `/auth?${params.toString()}`;
   };
 
-  const resolveRoles = useCallback(async (retries = 5): Promise<void> => {
-    try {
-      const roles = await apiClient<{ role: AppRole }[]>("/roles/me");
-      const dest = homePathFor(primaryRole(roles.map((r) => r.role)));
-      navigate({ to: dest, replace: true });
-    } catch {
-      if (retries > 0) {
-        await new Promise((r) => setTimeout(r, 1200));
-        return resolveRoles(retries - 1);
+  const resolveRoles = useCallback(
+    async (retries = 5): Promise<void> => {
+      try {
+        const roles = await apiClient<{ role: AppRole }[]>("/roles/me");
+        const dest = homePathFor(primaryRole(roles.map((r) => r.role)));
+        navigate({ to: dest, replace: true });
+      } catch {
+        if (retries > 0) {
+          await new Promise((r) => setTimeout(r, 1200));
+          return resolveRoles(retries - 1);
+        }
+        navigate({ to: "/app", replace: true });
       }
-      navigate({ to: "/app", replace: true });
-    }
-  }, [navigate]);
+    },
+    [navigate],
+  );
 
   useEffect(() => {
     if (!isSignedIn) return;
@@ -122,7 +153,8 @@ function AuthPage() {
   if (resolving) return <RoleRedirect />;
 
   const getFallbackRedirect = (role: SignupRole): string => {
-    if (role === "super_admin" || role === "affiliation_admin" || role === "commerce_admin") return "/admin";
+    if (role === "super_admin" || role === "affiliation_admin" || role === "commerce_admin")
+      return "/admin";
     if (role === "brand_partner" || role === "brand_manager") return "/brand";
     return "/app";
   };
@@ -160,7 +192,8 @@ function AuthPage() {
         </div>
         <div className="mt-auto pt-12">
           <blockquote className="max-w-md font-display text-xl leading-snug">
-            "One verification, every perk. This is how Nigerian membership should have always worked."
+            "One verification, every perk. This is how Nigerian membership should have always
+            worked."
           </blockquote>
           <p className="mt-3 text-sm text-primary-foreground/70">— PerkHub team</p>
         </div>
@@ -206,7 +239,9 @@ function AuthPage() {
                       {card.icon}
                     </span>
                     <span className="text-sm font-semibold leading-tight">{card.label}</span>
-                    <span className="text-xs text-muted-foreground leading-snug">{card.tagline}</span>
+                    <span className="text-xs text-muted-foreground leading-snug">
+                      {card.tagline}
+                    </span>
                   </button>
                 );
               })}
@@ -249,7 +284,9 @@ function AuthPage() {
             </button>
           </p>
           <p className="mt-4 text-center text-xs text-muted-foreground">
-            <Link to="/" className="hover:text-foreground">← Back to home</Link>
+            <Link to="/" className="hover:text-foreground">
+              ← Back to home
+            </Link>
           </p>
         </div>
       </div>

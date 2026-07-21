@@ -45,7 +45,10 @@ function AdminBrands() {
       {isLoading ? (
         <div className="text-sm text-muted-foreground">Loading…</div>
       ) : brands && brands.length === 0 ? (
-        <EmptyState title="No brand applications yet" description="Brand partners will appear here after they apply." />
+        <EmptyState
+          title="No brand applications yet"
+          description="Brand partners will appear here after they apply."
+        />
       ) : (
         <div className="space-y-8">
           <Section title={`Pending (${pending.length})`}>
@@ -127,7 +130,9 @@ function BrandRow({ b, actions }: { b: Brand; actions: React.ReactNode }) {
       <div>
         <div className="flex items-center gap-2">
           <div className="font-display text-base font-semibold">{b.name}</div>
-          <Badge variant="outline" className="capitalize">{b.status}</Badge>
+          <Badge variant="outline" className="capitalize">
+            {b.status}
+          </Badge>
         </div>
         <div className="mt-0.5 text-xs text-muted-foreground">
           {b.category} · {b.contactEmail}
@@ -139,7 +144,8 @@ function BrandRow({ b, actions }: { b: Brand; actions: React.ReactNode }) {
           </p>
         )}
         <div className="mt-1 text-xs text-muted-foreground">
-          Commission: {b.commissionType === "percent" ? `${b.commissionRate}%` : `₦${b.commissionRate} flat`}
+          Commission:{" "}
+          {b.commissionType === "percent" ? `${b.commissionRate}%` : `₦${b.commissionRate} flat`}
         </div>
       </div>
       <div className="flex flex-wrap gap-2">{actions}</div>

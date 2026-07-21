@@ -56,7 +56,18 @@ const nav = [
 ];
 
 const MONTH_LABELS = [
-  "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
+  "Jan",
+  "Feb",
+  "Mar",
+  "Apr",
+  "May",
+  "Jun",
+  "Jul",
+  "Aug",
+  "Sep",
+  "Oct",
+  "Nov",
+  "Dec",
 ];
 
 const STATUS_LABELS: Record<CommissionStatus, string> = {
@@ -154,7 +165,9 @@ function AdminAnalyticsPage() {
                   tickFormatter={(v: number) => formatNaira(v)}
                 />
                 <ChartTooltip
-                  content={<ChartTooltipContent formatter={(value) => formatNaira(Number(value))} />}
+                  content={
+                    <ChartTooltipContent formatter={(value) => formatNaira(Number(value))} />
+                  }
                 />
                 <Line
                   dataKey="commissionAmount"
@@ -214,7 +227,9 @@ function AdminAnalyticsPage() {
                       width={110}
                     />
                     <ChartTooltip
-                      content={<ChartTooltipContent formatter={(value) => formatNaira(Number(value))} />}
+                      content={
+                        <ChartTooltipContent formatter={(value) => formatNaira(Number(value))} />
+                      }
                     />
                     <Bar
                       dataKey="commissionAmount"
@@ -255,7 +270,9 @@ function AdminAnalyticsPage() {
             <ChartContainer config={statusConfig} className="mt-4 aspect-square h-64 w-full">
               <PieChart>
                 <ChartTooltip
-                  content={<ChartTooltipContent formatter={(value) => formatNaira(Number(value))} />}
+                  content={
+                    <ChartTooltipContent formatter={(value) => formatNaira(Number(value))} />
+                  }
                 />
                 <Pie
                   data={data.byStatus}

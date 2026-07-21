@@ -1,7 +1,15 @@
 import { useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { BarChart3, LayoutDashboard, ShieldCheck, Store, Users, ExternalLink, Loader2 } from "lucide-react";
+import {
+  BarChart3,
+  LayoutDashboard,
+  ShieldCheck,
+  Store,
+  Users,
+  ExternalLink,
+  Loader2,
+} from "lucide-react";
 import type { AffiliationGroup, MembershipStatus, Profile, UserMembership } from "@perkhub/shared";
 import { apiClient } from "@/lib/api-client";
 import { DashboardShell, EmptyState } from "@/components/perk/DashboardShell";
@@ -61,7 +69,11 @@ function VerificationsQueue() {
       id,
       to,
       reason,
-    }: { id: string; to: "verified" | "rejected"; reason?: string }) => {
+    }: {
+      id: string;
+      to: "verified" | "rejected";
+      reason?: string;
+    }) => {
       await apiClient(`/memberships/${id}`, {
         method: "PATCH",
         body: JSON.stringify({
@@ -75,7 +87,8 @@ function VerificationsQueue() {
       qc.invalidateQueries({ queryKey: ["admin-counts"] });
       toast.success("Updated");
     },
-    onError: (e) => toast.error("Update failed", { description: e instanceof Error ? e.message : "" }),
+    onError: (e) =>
+      toast.error("Update failed", { description: e instanceof Error ? e.message : "" }),
   });
 
   async function openDoc(key: string) {
@@ -108,7 +121,10 @@ function VerificationsQueue() {
       {isLoading ? (
         <div className="text-sm text-muted-foreground">Loading…</div>
       ) : !rows || rows.length === 0 ? (
-        <EmptyState title={`No ${status} submissions`} description="Nothing to review here right now." />
+        <EmptyState
+          title={`No ${status} submissions`}
+          description="Nothing to review here right now."
+        />
       ) : (
         <div className="space-y-4">
           {rows.map((r) => (
@@ -119,8 +135,7 @@ function VerificationsQueue() {
                     {r.profile?.fullName ?? "Unnamed member"}
                   </div>
                   <div className="text-sm text-muted-foreground">
-                    {r.group?.name}{" "}
-                    <span className="text-xs uppercase">· {r.group?.type}</span>
+                    {r.group?.name} <span className="text-xs uppercase">· {r.group?.type}</span>
                   </div>
                   <div className="mt-2 grid grid-cols-2 gap-3 text-xs md:grid-cols-4">
                     <div>
@@ -172,7 +187,9 @@ function VerificationsQueue() {
                   <div className="flex gap-2">
                     <Button
                       variant="outline"
-                      onClick={() => decide.mutate({ id: r.id, to: "rejected", reason: reasons[r.id] })}
+                      onClick={() =>
+                        decide.mutate({ id: r.id, to: "rejected", reason: reasons[r.id] })
+                      }
                       disabled={decide.isPending}
                     >
                       Reject

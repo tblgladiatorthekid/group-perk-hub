@@ -12,7 +12,7 @@ membershipRoutes.use("/*", requireAuth);
 
 membershipRoutes.get("/", async (c) => {
   const userId = c.var.userId;
-  const isAdmin = await userRolesRepo.hasRole(db, userId, "admin");
+  const isAdmin = await userRolesRepo.hasRole(db, userId, "super_admin");
   const status = c.req.query("status") as MembershipStatus | undefined;
 
   if (isAdmin && c.req.query("userId")) {
@@ -42,7 +42,7 @@ membershipRoutes.get("/:id", async (c) => {
 
 membershipRoutes.patch("/:id", async (c) => {
   const userId = c.var.userId;
-  const isAdmin = await userRolesRepo.hasRole(db, userId, "admin");
+  const isAdmin = await userRolesRepo.hasRole(db, userId, "super_admin");
   if (!isAdmin) return c.json({ error: "Forbidden" }, 403);
   const body = await c.req.json();
   const membership = await stampExpiryOnVerification(db, c.req.param("id"), body);

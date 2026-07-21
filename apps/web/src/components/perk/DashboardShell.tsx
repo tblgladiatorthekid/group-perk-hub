@@ -60,7 +60,8 @@ export function DashboardShell({
         <aside className="md:sticky md:top-24 md:self-start">
           <nav className="flex gap-1 overflow-x-auto md:flex-col">
             {nav.map((item) => {
-              const active = pathname === item.to || (item.to !== "/" && pathname.startsWith(item.to));
+              const active =
+                pathname === item.to || (item.to !== "/" && pathname.startsWith(item.to));
               return (
                 <Link
                   key={item.to}

@@ -9,7 +9,7 @@ profileRoutes.use("/*", requireAuth);
 
 // Admin-only bulk lookup, e.g. GET /profiles?ids=a,b,c — used to resolve
 // submitter name/phone for the membership verification queue.
-profileRoutes.get("/", requireRole("admin"), async (c) => {
+profileRoutes.get("/", requireRole("super_admin"), async (c) => {
   const ids = (c.req.query("ids") ?? "")
     .split(",")
     .map((id) => id.trim())

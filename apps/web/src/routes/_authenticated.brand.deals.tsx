@@ -228,10 +228,7 @@ function BrandDeals() {
           <DialogHeader>
             <DialogTitle>Compose a deal</DialogTitle>
           </DialogHeader>
-          <form
-            onSubmit={form.handleSubmit((v) => create.mutate(v))}
-            className="space-y-4"
-          >
+          <form onSubmit={form.handleSubmit((v) => create.mutate(v))} className="space-y-4">
             <div className="space-y-1.5">
               <Label>Title</Label>
               <Input {...form.register("title")} placeholder="e.g. 20% off any bowl" />
@@ -244,7 +241,9 @@ function BrandDeals() {
               <Label>Description</Label>
               <Textarea rows={3} {...form.register("description")} />
               {form.formState.errors.description && (
-                <p className="text-xs text-destructive">{form.formState.errors.description.message}</p>
+                <p className="text-xs text-destructive">
+                  {form.formState.errors.description.message}
+                </p>
               )}
             </div>
 
@@ -323,31 +322,33 @@ function BrandDeals() {
             <div className="space-y-1.5">
               <Label>Target affiliation groups</Label>
               <div className="grid max-h-52 gap-1.5 overflow-y-auto rounded-md border border-border p-3">
-                {groups?.filter((g) => g.active).map((g) => {
-                  const checked = selectedGroups.includes(g.id);
-                  return (
-                    <label
-                      key={g.id}
-                      className="flex cursor-pointer items-center gap-2 rounded p-1.5 hover:bg-accent"
-                    >
-                      <Checkbox
-                        checked={checked}
-                        onCheckedChange={(v) => {
-                          const next = new Set(selectedGroups);
-                          if (v) next.add(g.id);
-                          else next.delete(g.id);
-                          form.setValue("targetGroupIds", [...next], { shouldValidate: true });
-                        }}
-                      />
-                      <span className="text-sm">
-                        {g.name}
-                        <span className="ml-2 text-xs uppercase text-muted-foreground">
-                          {g.type}
+                {groups
+                  ?.filter((g) => g.active)
+                  .map((g) => {
+                    const checked = selectedGroups.includes(g.id);
+                    return (
+                      <label
+                        key={g.id}
+                        className="flex cursor-pointer items-center gap-2 rounded p-1.5 hover:bg-accent"
+                      >
+                        <Checkbox
+                          checked={checked}
+                          onCheckedChange={(v) => {
+                            const next = new Set(selectedGroups);
+                            if (v) next.add(g.id);
+                            else next.delete(g.id);
+                            form.setValue("targetGroupIds", [...next], { shouldValidate: true });
+                          }}
+                        />
+                        <span className="text-sm">
+                          {g.name}
+                          <span className="ml-2 text-xs uppercase text-muted-foreground">
+                            {g.type}
+                          </span>
                         </span>
-                      </span>
-                    </label>
-                  );
-                })}
+                      </label>
+                    );
+                  })}
               </div>
               {form.formState.errors.targetGroupIds && (
                 <p className="text-xs text-destructive">

@@ -14,16 +14,24 @@ function Landing() {
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4">
           <Logo />
           <nav className="hidden items-center gap-8 text-sm font-medium text-muted-foreground md:flex">
-            <a href="#how" className="hover:text-foreground">How it works</a>
-            <a href="#brands" className="hover:text-foreground">For brands</a>
-            <a href="#tribes" className="hover:text-foreground">Tribes</a>
+            <a href="#how" className="hover:text-foreground">
+              How it works
+            </a>
+            <a href="#brands" className="hover:text-foreground">
+              For brands
+            </a>
+            <a href="#tribes" className="hover:text-foreground">
+              Tribes
+            </a>
           </nav>
           <div className="flex items-center gap-2">
             <Button asChild variant="ghost" size="sm">
               <Link to="/auth">Sign in</Link>
             </Button>
             <Button asChild size="sm">
-              <Link to="/auth" search={{ mode: "signup" } as never}>Get started</Link>
+              <Link to="/auth" search={{ mode: "signup" } as never}>
+                Get started
+              </Link>
             </Button>
           </div>
         </div>
@@ -48,10 +56,14 @@ function Landing() {
               </p>
               <div className="mt-8 flex flex-wrap justify-center gap-3">
                 <Button asChild size="lg">
-                  <Link to="/auth" search={{ mode: "signup" } as never}>Verify my membership</Link>
+                  <Link to="/auth" search={{ mode: "signup" } as never}>
+                    Verify my membership
+                  </Link>
                 </Button>
                 <Button asChild size="lg" variant="outline">
-                  <Link to="/auth" search={{ mode: "signup", role: "brand" } as never}>List my brand</Link>
+                  <Link to="/auth" search={{ mode: "signup", role: "brand_partner" } as never}>
+                    List my brand
+                  </Link>
                 </Button>
               </div>
               <p className="mt-4 text-xs text-muted-foreground">
@@ -67,7 +79,8 @@ function Landing() {
           <div className="mx-auto max-w-6xl px-4 py-16">
             <h2 className="text-center font-display text-3xl font-bold">How PerkHub works</h2>
             <p className="mx-auto mt-3 max-w-2xl text-center text-muted-foreground">
-              One verification, one digital membership card, unlimited discounts across partner brands.
+              One verification, one digital membership card, unlimited discounts across partner
+              brands.
             </p>
             <div className="mt-10 grid gap-6 md:grid-cols-3">
               {[
@@ -87,7 +100,10 @@ function Landing() {
                   body: "Show your digital badge or claim a unique code. Every redemption is tracked, private, and yours to keep.",
                 },
               ].map(({ Icon, title, body }) => (
-                <div key={title} className="rounded-2xl border border-border bg-card p-6 shadow-[var(--shadow-elev-1)]">
+                <div
+                  key={title}
+                  className="rounded-2xl border border-border bg-card p-6 shadow-[var(--shadow-elev-1)]"
+                >
                   <div className="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10 text-primary">
                     <Icon className="h-5 w-5" />
                   </div>
@@ -104,7 +120,9 @@ function Landing() {
           <div className="flex items-end justify-between gap-4">
             <div>
               <h2 className="font-display text-3xl font-bold">Which tribe are you?</h2>
-              <p className="mt-2 text-muted-foreground">Sign up and search for your specific group — or request a new one.</p>
+              <p className="mt-2 text-muted-foreground">
+                Sign up and search for your specific group — or request a new one.
+              </p>
             </div>
           </div>
           <div className="mt-8 grid gap-3 sm:grid-cols-2 md:grid-cols-3">
@@ -116,7 +134,10 @@ function Landing() {
               "Corporate Staff Associations",
               "Trade Unions & Religious Orgs",
             ].map((t) => (
-              <div key={t} className="flex items-center gap-3 rounded-xl border border-border bg-card px-4 py-4">
+              <div
+                key={t}
+                className="flex items-center gap-3 rounded-xl border border-border bg-card px-4 py-4"
+              >
                 <Users className="h-5 w-5 text-primary" />
                 <span className="text-sm font-medium">{t}</span>
               </div>
@@ -125,7 +146,10 @@ function Landing() {
         </section>
 
         {/* Brands */}
-        <section id="brands" className="border-t border-border/60 bg-primary text-primary-foreground">
+        <section
+          id="brands"
+          className="border-t border-border/60 bg-primary text-primary-foreground"
+        >
           <div className="mx-auto grid max-w-6xl gap-10 px-4 py-16 md:grid-cols-2 md:items-center">
             <div>
               <span className="inline-flex items-center gap-2 rounded-full bg-primary-foreground/10 px-3 py-1 text-xs font-medium">
@@ -136,12 +160,15 @@ function Landing() {
                 Reach millions of verified Nigerians. Pay only when they buy.
               </h2>
               <p className="mt-4 text-primary-foreground/80">
-                Target by affiliation, cap redemptions, track every conversion. We handle verification and reporting;
-                you handle the great offer. No wasted spend on unverified traffic.
+                Target by affiliation, cap redemptions, track every conversion. We handle
+                verification and reporting; you handle the great offer. No wasted spend on
+                unverified traffic.
               </p>
               <div className="mt-6 flex flex-wrap gap-3">
                 <Button asChild size="lg" variant="secondary">
-                  <Link to="/auth" search={{ mode: "signup", role: "brand" } as never}>Apply as a brand</Link>
+                  <Link to="/auth" search={{ mode: "signup", role: "brand_partner" } as never}>
+                    Apply as a brand
+                  </Link>
                 </Button>
               </div>
             </div>
@@ -166,7 +193,9 @@ function Landing() {
       <footer className="border-t border-border/60">
         <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-4 py-8 text-sm text-muted-foreground md:flex-row">
           <Logo />
-          <p>© {new Date().getFullYear()} PerkHub Nigeria. Built for the tribes that build Nigeria.</p>
+          <p>
+            © {new Date().getFullYear()} PerkHub Nigeria. Built for the tribes that build Nigeria.
+          </p>
         </div>
       </footer>
     </div>

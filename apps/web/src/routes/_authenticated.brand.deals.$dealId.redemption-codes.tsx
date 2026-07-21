@@ -135,9 +135,7 @@ function DealRedemptionCodes() {
                       Uses: {c.useCount}/{c.maxUses}
                     </span>
                     {c.expiresAt && (
-                      <span>
-                        Expires: {new Date(c.expiresAt).toLocaleDateString("en-NG")}
-                      </span>
+                      <span>Expires: {new Date(c.expiresAt).toLocaleDateString("en-NG")}</span>
                     )}
                   </div>
                 </div>
@@ -149,11 +147,7 @@ function DealRedemptionCodes() {
                   onClick={() => toggleShow(c.code)}
                   title={showCodes[c.code] ? "Hide code" : "Show code"}
                 >
-                  {showCodes[c.code] ? (
-                    <EyeOff className="h-4 w-4" />
-                  ) : (
-                    <Eye className="h-4 w-4" />
-                  )}
+                  {showCodes[c.code] ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                 </Button>
                 <Button
                   variant="ghost"

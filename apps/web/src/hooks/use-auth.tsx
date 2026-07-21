@@ -42,7 +42,9 @@ export function homePathFor(role: AppRole): string {
 
 export function hasAdminAccess(roles: AppRole[] | undefined): boolean {
   if (!roles) return false;
-  return roles.some((r) => ["super_admin", "admin", "affiliation_admin", "commerce_admin"].includes(r));
+  return roles.some((r) =>
+    ["super_admin", "admin", "affiliation_admin", "commerce_admin"].includes(r),
+  );
 }
 
 export function hasBrandAccess(roles: AppRole[] | undefined): boolean {

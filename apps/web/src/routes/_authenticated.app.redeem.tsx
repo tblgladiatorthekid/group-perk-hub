@@ -64,7 +64,11 @@ function RedeemPage() {
   return (
     <DashboardShell
       title="Redeem a deal"
-      subtitle={deal ? `Redeem your code for "${deal.title}"` : "Enter your redemption code to claim a deal."}
+      subtitle={
+        deal
+          ? `Redeem your code for "${deal.title}"`
+          : "Enter your redemption code to claim a deal."
+      }
       nav={[{ to: "/app", label: "Back", icon: <ArrowLeft className="h-4 w-4" /> }]}
       accent="Consumer"
     >
@@ -121,7 +125,11 @@ function RedeemPage() {
               </div>
             </div>
             <p className="text-center text-xs text-muted-foreground">
-              Need a code? Browse <Link to="/app/deals" className="text-primary hover:underline">available deals</Link>.
+              Need a code? Browse{" "}
+              <Link to="/app/deals" className="text-primary hover:underline">
+                available deals
+              </Link>
+              .
             </p>
           </form>
         )}

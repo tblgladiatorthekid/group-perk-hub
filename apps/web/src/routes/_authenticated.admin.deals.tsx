@@ -60,7 +60,10 @@ function AdminDeals() {
       {isLoading ? (
         <div className="text-sm text-muted-foreground">Loading…</div>
       ) : deals && deals.length === 0 ? (
-        <EmptyState title="No deals yet" description="Brand partners will submit deals for review here." />
+        <EmptyState
+          title="No deals yet"
+          description="Brand partners will submit deals for review here."
+        />
       ) : (
         <div className="space-y-8">
           <div>
@@ -91,7 +94,11 @@ function AdminDeals() {
                           variant="outline"
                           onClick={() => {
                             const reason = window.prompt("Reason for rejection?") ?? "";
-                            setStatus.mutate({ id: d.id, status: "rejected", rejectionReason: reason });
+                            setStatus.mutate({
+                              id: d.id,
+                              status: "rejected",
+                              rejectionReason: reason,
+                            });
                           }}
                         >
                           <X className="mr-1.5 h-4 w-4" /> Reject
@@ -115,11 +122,7 @@ function AdminDeals() {
                   actions={
                     d.status === "published" ? (
                       <>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          asChild
-                        >
+                        <Button size="sm" variant="outline" asChild>
                           <Link to={`/brand/deals/${d.id}/redemption-codes`}>
                             <Ticket className="mr-1.5 h-4 w-4" /> Manage codes
                           </Link>
@@ -151,15 +154,7 @@ function AdminDeals() {
   );
 }
 
-function DealRow({
-  d,
-  brand,
-  actions,
-}: {
-  d: Deal;
-  brand?: Brand;
-  actions: React.ReactNode;
-}) {
+function DealRow({ d, brand, actions }: { d: Deal; brand?: Brand; actions: React.ReactNode }) {
   return (
     <div className="flex flex-col gap-3 rounded-2xl border border-border bg-card p-5 md:flex-row md:items-start md:justify-between">
       <div>

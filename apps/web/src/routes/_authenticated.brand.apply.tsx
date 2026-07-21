@@ -123,9 +123,7 @@ function BrandApply() {
           ? "Update your business details. Status changes require admin review."
           : "Tell us about your business. PerkHub admins review every application before you can publish deals."
       }
-      nav={[
-        { to: "/brand", label: "Back to overview", icon: <ArrowLeft className="h-4 w-4" /> },
-      ]}
+      nav={[{ to: "/brand", label: "Back to overview", icon: <ArrowLeft className="h-4 w-4" /> }]}
       accent={existing ? existing.status : "New application"}
     >
       {isLoading ? (
@@ -149,7 +147,9 @@ function BrandApply() {
               </SelectTrigger>
               <SelectContent>
                 {CATEGORIES.map((c) => (
-                  <SelectItem key={c} value={c}>{c}</SelectItem>
+                  <SelectItem key={c} value={c}>
+                    {c}
+                  </SelectItem>
                 ))}
               </SelectContent>
             </Select>

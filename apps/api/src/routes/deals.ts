@@ -10,7 +10,7 @@ export const dealRoutes = new Hono();
 
 // GET /deals?status=published|pending_review|draft|all&brandId=...
 // - Default: published only (public)
-// - status != published requires admin OR (brandId filter that caller owns)
+// - status != published requires super_admin OR (brandId filter that caller owns)
 dealRoutes.get("/", async (c) => {
   const status = c.req.query("status") ?? "published";
   const brandId = c.req.query("brandId");
@@ -31,7 +31,7 @@ dealRoutes.get("/", async (c) => {
   const auth = await clerkClient.authenticateRequest(c.req.raw);
   if (!auth.isSignedIn) return c.json({ error: "Unauthorized" }, 401);
   const uid = auth.toAuth().userId!;
-  const isAdmin = await userRolesRepo.hasRole(db, uid, "admin");
+  const isAdmin = await userRolesRepo.hasRole(db, uid, "super_admin");
 
   let ownedBrand = false;
   if (brandId) {
@@ -60,7 +60,7 @@ dealRoutes.post("/", requireAuth, async (c) => {
   const brand = await brandsRepo.getBrand(db, body.brandId);
   if (!brand) return c.json({ error: "Brand not found" }, 404);
 
-  const isAdmin = await userRolesRepo.hasRole(db, userId, "admin");
+  const isAdmin = await userRolesRepo.hasRole(db, userId, "super_admin");
   if (brand.ownerUserId !== userId && !isAdmin) {
     return c.json({ error: "Forbidden: Not your brand" }, 403);
   }
@@ -68,7 +68,7 @@ dealRoutes.post("/", requireAuth, async (c) => {
     return c.json({ error: "Your brand must be approved before creating deals" }, 403);
   }
 
-  // Non-admin submissions default to pending_review
+  // Non-super_admin submissions default to pending_review
   const payload = { ...body };
   if (!isAdmin) payload.status = "pending_review";
   if (payload.startDate) payload.startDate = new Date(payload.startDate);
@@ -84,7 +84,7 @@ dealRoutes.patch("/:id", requireAuth, async (c) => {
   if (!deal) return c.json({ error: "Deal not found" }, 404);
 
   const brand = await brandsRepo.getBrand(db, deal.brandId);
-  const isAdmin = await userRolesRepo.hasRole(db, userId, "admin");
+  const isAdmin = await userRolesRepo.hasRole(db, userId, "super_admin");
   if (brand?.ownerUserId !== userId && !isAdmin) {
     return c.json({ error: "Forbidden" }, 403);
   }
@@ -104,7 +104,7 @@ dealRoutes.patch("/:id", requireAuth, async (c) => {
 
 dealRoutes.delete("/:id", requireAuth, async (c) => {
   const userId = c.var.userId;
-  const isAdmin = await userRolesRepo.hasRole(db, userId, "admin");
+  const isAdmin = await userRolesRepo.hasRole(db, userId, "super_admin");
   if (!isAdmin) return c.json({ error: "Forbidden" }, 403);
   await dealsRepo.deleteDeal(db, c.req.param("id"));
   return c.json({ success: true });
