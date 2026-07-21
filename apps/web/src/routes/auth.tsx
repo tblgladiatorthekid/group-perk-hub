@@ -2,7 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useCallback, useEffect, useState } from "react";
 import { z } from "zod";
 import { SignIn, SignUp, useAuth } from "@clerk/tanstack-react-start";
-import { BadgeCheck, Building2, ShieldCheck } from "lucide-react";
+import { BadgeCheck, Building2, ShieldCheck, Users } from "lucide-react";
 
 import { Logo } from "@/components/perk/Logo";
 import { RoleRedirect } from "@/components/perk/RoleRedirect";
@@ -11,7 +11,7 @@ import { primaryRole, homePathFor, type AppRole } from "@/hooks/use-auth";
 
 const searchSchema = z.object({
   mode: z.enum(["signin", "signup"]).optional(),
-  role: z.enum(["consumer", "brand"]).optional(),
+  role: z.enum(["consumer", "brand_partner", "brand_manager", "super_admin", "affiliation_admin", "commerce_admin"]).optional(),
   redirect: z.string().optional(),
 });
 
@@ -20,7 +20,7 @@ export const Route = createFileRoute("/auth")({
   component: AuthPage,
 });
 
-type SignupRole = "consumer" | "brand";
+type SignupRole = "consumer" | "brand_partner" | "brand_manager" | "super_admin" | "affiliation_admin" | "commerce_admin";
 
 const roleCards: {
   value: SignupRole;
@@ -35,10 +35,34 @@ const roleCards: {
     icon: <BadgeCheck className="h-5 w-5" />,
   },
   {
-    value: "brand",
+    value: "brand_partner",
     label: "Brand partner",
     tagline: "Reach verified Nigerian audiences. Pay per redemption.",
     icon: <Building2 className="h-5 w-5" />,
+  },
+  {
+    value: "brand_manager",
+    label: "Brand manager",
+    tagline: "Manage deals and redemptions for a brand partner.",
+    icon: <Users className="h-5 w-5" />,
+  },
+  {
+    value: "super_admin",
+    label: "Super admin",
+    tagline: "Full platform administration and oversight.",
+    icon: <ShieldCheck className="h-5 w-5" />,
+  },
+  {
+    value: "affiliation_admin",
+    label: "Affiliation admin",
+    tagline: "Manage affiliation groups and verification rules.",
+    icon: <ShieldCheck className="h-5 w-5" />,
+  },
+  {
+    value: "commerce_admin",
+    label: "Commerce admin",
+    tagline: "Oversee commercial flow, deals, and transactions.",
+    icon: <ShieldCheck className="h-5 w-5" />,
   },
 ];
 
@@ -60,11 +84,8 @@ function AuthPage() {
 
   const [signupRole, setSignupRole] = useState<SignupRole>(search.role ?? "consumer");
 
-  // After sign-in, resolve the real role then redirect appropriately.
   const [resolving, setResolving] = useState(false);
 
-  // Preserve role/redirect context across Clerk's own sign-in/sign-up
-  // navigation links, not just our own toggle button below.
   const authHref = (targetMode: "signin" | "signup") => {
     const params = new URLSearchParams({ mode: targetMode });
     if (search.role) params.set("role", search.role);
@@ -100,13 +121,16 @@ function AuthPage() {
 
   if (resolving) return <RoleRedirect />;
 
+  const getFallbackRedirect = (role: SignupRole): string => {
+    if (role === "super_admin" || role === "affiliation_admin" || role === "commerce_admin") return "/admin";
+    if (role === "brand_partner" || role === "brand_manager") return "/brand";
+    return "/app";
+  };
+
   return (
     <div className="grid min-h-screen md:grid-cols-2">
-      {/* Left panel */}
       <div className="relative hidden flex-col bg-primary p-10 text-primary-foreground md:flex">
         <Logo />
-
-        {/* Role showcase */}
         <div className="mt-12 flex flex-col gap-4">
           {[
             {
@@ -134,7 +158,6 @@ function AuthPage() {
             </div>
           ))}
         </div>
-
         <div className="mt-auto pt-12">
           <blockquote className="max-w-md font-display text-xl leading-snug">
             "One verification, every perk. This is how Nigerian membership should have always worked."
@@ -143,10 +166,8 @@ function AuthPage() {
         </div>
       </div>
 
-      {/* Right panel */}
       <div className="flex items-center justify-center px-4 py-10">
         <div className="w-full max-w-sm">
-          {/* Mobile logo */}
           <div className="mb-8 md:hidden">
             <Logo />
           </div>
@@ -160,7 +181,6 @@ function AuthPage() {
               : "Sign in to your PerkHub account to access your dashboard."}
           </p>
 
-          {/* Role selector — only on sign-up */}
           {mode === "signup" && (
             <div className="mt-5 grid grid-cols-2 gap-3">
               {roleCards.map((card) => {
@@ -198,7 +218,7 @@ function AuthPage() {
               <SignUp
                 routing="hash"
                 signInUrl={authHref("signin")}
-                fallbackRedirectUrl={signupRole === "brand" ? "/brand" : "/app"}
+                fallbackRedirectUrl={getFallbackRedirect(signupRole)}
                 unsafeMetadata={{ intended_role: signupRole }}
                 appearance={clerkAppearance}
               />

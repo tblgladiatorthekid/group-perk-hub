@@ -2,6 +2,7 @@ import type { Db } from "../db/client";
 import * as transactionsRepo from "../repositories/transactions.repo";
 import * as brandsRepo from "../repositories/brands.repo";
 import * as dealsRepo from "../repositories/deals.repo";
+import * as redemptionCodeService from "./redemption-code.service";
 import crypto from "crypto";
 
 export interface CreateTransactionInput {
@@ -13,6 +14,7 @@ export interface CreateTransactionInput {
   originalPrice?: number | null;
   finalPrice?: number | null;
   discountApplied?: number;
+  redemptionCodeId?: string | null;
 }
 
 function calculateCommission(
@@ -28,7 +30,7 @@ function calculateCommission(
 }
 
 function generateRedemptionCode(): string {
-  return `PRK-${crypto.randomBytes(4).toString("hex").toUpperCase()}`;
+  return `PRK-${crypto.randomBytes(6).toString("hex").toUpperCase()}`;
 }
 
 export async function createTransaction(db: Db, input: CreateTransactionInput) {
@@ -41,6 +43,10 @@ export async function createTransaction(db: Db, input: CreateTransactionInput) {
   const finalPrice = input.finalPrice ?? null;
   const discountApplied = input.discountApplied ?? 0;
   const commissionAmount = calculateCommission(finalPrice, brand.commissionType, Number(brand.commissionRate));
+
+  const redemptionCode = input.redemptionCodeId
+    ? await redemptionCodeService.getRedemptionCodeById(db, input.redemptionCodeId)
+    : null;
 
   return transactionsRepo.createTransaction(db, {
     userId: input.userId,
@@ -56,7 +62,35 @@ export async function createTransaction(db: Db, input: CreateTransactionInput) {
     commissionAmount: commissionAmount.toString(),
     commissionStatus: "pending",
     status: "redeemed",
-    redemptionCode: generateRedemptionCode(),
+    redemptionCode: redemptionCode?.code ?? generateRedemptionCode(),
+    redemptionCodeId: redemptionCode?.id ?? null,
     redeemedAt: new Date(),
+  });
+}
+
+export async function redeemDealWithCode(db: Db, userId: string, code: string, dealId: string) {
+  const codeData = await redemptionCodeService.redeemCode(db, code, userId);
+  if (!codeData) {
+    throw new Error("Invalid or expired redemption code");
+  }
+
+  const deal = await dealsRepo.getDeal(db, dealId);
+  if (!deal) {
+    throw new Error("Deal not found");
+  }
+
+  if (codeData.dealId !== deal.id) {
+    throw new Error("Redemption code does not match this deal");
+  }
+
+  return createTransaction(db, {
+    userId,
+    dealId: deal.id,
+    brandId: deal.brandId,
+    method: deal.channel,
+    originalPrice: deal.discountValue.toString(),
+    finalPrice: deal.discountValue.toString(),
+    discountApplied: deal.discountValue.toString(),
+    redemptionCodeId: codeData.id,
   });
 }

@@ -21,6 +21,7 @@ import {
   discountTypeEnum,
   invoiceStatusEnum,
   membershipStatusEnum,
+  redemptionCodeStatusEnum,
   transactionStatusEnum,
   verificationMethodEnum,
 } from "./enums";
@@ -157,6 +158,29 @@ export const savedDeals = pgTable(
   }),
 );
 
+export const redemptionCodes = pgTable(
+  "redemption_codes",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    dealId: uuid("deal_id")
+      .notNull()
+      .references(() => deals.id, { onDelete: "cascade" }),
+    brandId: uuid("brand_id")
+      .notNull()
+      .references(() => brands.id, { onDelete: "cascade" }),
+    code: text("code").notNull().unique(),
+    status: redemptionCodeStatusEnum("status").notNull().default("active"),
+    maxUses: integer("max_uses").notNull().default(1),
+    useCount: integer("use_count").notNull().default(0),
+    expiresAt: timestamp("expires_at", { withTimezone: true }),
+    createdBy: text("created_by").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => ({
+    dealCodeUnique: uniqueIndex().on(table.dealId, table.code),
+  }),
+);
+
 export const transactions = pgTable("transactions", {
   id: uuid("id").defaultRandom().primaryKey(),
   userId: text("user_id").notNull(),
@@ -178,6 +202,7 @@ export const transactions = pgTable("transactions", {
   commissionStatus: commissionStatusEnum("commission_status").notNull().default("pending"),
   status: transactionStatusEnum("status").notNull().default("redeemed"),
   invoiceId: uuid("invoice_id"),
+  redemptionCodeId: uuid("redemption_code_id").references(() => redemptionCodes.id, { onDelete: "set null" }),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
   redeemedAt: timestamp("redeemed_at", { withTimezone: true }),
 });

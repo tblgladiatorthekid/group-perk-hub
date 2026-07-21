@@ -1,5 +1,5 @@
 import { createClerkClient, type AuthObject } from "@clerk/backend";
-import type { AppRole } from "@perkhub/shared";
+import type { AppRole, AdminSubRole, BrandSubRole } from "@perkhub/shared";
 import { createMiddleware } from "hono/factory";
 
 const clerkClient = createClerkClient({
@@ -39,11 +39,35 @@ export function requireRole(...roles: AppRole[]) {
     const { userId } = c.var;
     const userRoles = await getRolesFromDb(userId);
     const hasRole = roles.some((role) => userRoles.includes(role));
-
     if (!hasRole) {
       return c.json({ error: "Forbidden: Insufficient permissions" }, 403);
     }
+    await next();
+  });
+}
 
+export function requireAdminSubRole(...subRoles: AdminSubRole[]) {
+  return createMiddleware(async (c, next) => {
+    const { userId } = c.var;
+    const userRoles = await getRolesFromDb(userId);
+    const hasSubRole = subRoles.some((r) => userRoles.includes(r));
+    const isSuperAdmin = userRoles.includes("super_admin") || userRoles.includes("admin");
+    if (!hasSubRole && !isSuperAdmin) {
+      return c.json({ error: "Forbidden: Insufficient permissions" }, 403);
+    }
+    await next();
+  });
+}
+
+export function requireBrandSubRole(...subRoles: BrandSubRole[]) {
+  return createMiddleware(async (c, next) => {
+    const { userId } = c.var;
+    const userRoles = await getRolesFromDb(userId);
+    const hasSubRole = subRoles.some((r) => userRoles.includes(r));
+    const isBrandOwner = userRoles.includes("brand_partner") || userRoles.includes("brand_manager");
+    if (!hasSubRole && !isBrandOwner) {
+      return c.json({ error: "Forbidden: Insufficient permissions" }, 403);
+    }
     await next();
   });
 }

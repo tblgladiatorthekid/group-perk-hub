@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { BadgeCheck, ChevronDown, Heart, Home, Sparkles, Tag, Ticket, User } from "lucide-react";
 import type { Brand, Deal, SavedDeal, UserMembership } from "@perkhub/shared";
@@ -24,6 +24,7 @@ const nav = [
   { to: "/app/verify", label: "Verify membership", icon: <BadgeCheck className="h-4 w-4" /> },
   { to: "/app/membership", label: "My card", icon: <Ticket className="h-4 w-4" /> },
   { to: "/app/deals", label: "Deals", icon: <Sparkles className="h-4 w-4" /> },
+  { to: "/app/redeem", label: "Redeem code", icon: <Tag className="h-4 w-4" /> },
   { to: "/app", label: "Profile (soon)", icon: <User className="h-4 w-4" /> },
 ];
 
@@ -184,6 +185,11 @@ function DealsPage() {
                     </a>
                   </Button>
                 )}
+                <Button asChild>
+                  <Link to={`/app/redeem?dealId=${activeDeal.id}`}>
+                    <Ticket className="mr-2 h-4 w-4" /> Redeem with code
+                  </Link>
+                </Button>
               </DialogFooter>
             </>
           )}

@@ -4,7 +4,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { ArrowLeft, Plus, Tag } from "lucide-react";
+import { ArrowLeft, Plus, Tag, Ticket } from "lucide-react";
 import type { AffiliationGroup, Brand, Deal } from "@perkhub/shared";
 import { apiClient } from "@/lib/api-client";
 import { DashboardShell, EmptyState } from "@/components/perk/DashboardShell";
@@ -197,18 +197,27 @@ function BrandDeals() {
                   </Badge>
                 </div>
               </div>
-              <Badge
-                className="capitalize"
-                variant={
-                  d.status === "published"
-                    ? "default"
-                    : d.status === "rejected"
-                      ? "destructive"
-                      : "secondary"
-                }
-              >
-                {d.status.replace("_", " ")}
-              </Badge>
+              <div className="flex flex-col items-end gap-2">
+                <Badge
+                  className="capitalize"
+                  variant={
+                    d.status === "published"
+                      ? "default"
+                      : d.status === "rejected"
+                        ? "destructive"
+                        : "secondary"
+                  }
+                >
+                  {d.status.replace("_", " ")}
+                </Badge>
+                {d.status === "published" && (
+                  <Button asChild variant="outline" size="sm">
+                    <Link to={`/brand/deals/${d.id}/redemption-codes`}>
+                      <Ticket className="mr-2 h-4 w-4" /> Manage codes
+                    </Link>
+                  </Button>
+                )}
+              </div>
             </div>
           ))}
         </div>

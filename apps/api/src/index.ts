@@ -14,6 +14,7 @@ import { transactionRoutes } from "./routes/transactions";
 import { invoiceRoutes } from "./routes/invoices";
 import { adminRoutes } from "./routes/admin";
 import { storageRoutes } from "./routes/storage";
+import { redemptionCodeRoutes } from "./routes/redemption-codes";
 
 export function createApp() {
   const app = new Hono();
@@ -42,6 +43,7 @@ export function createApp() {
   app.route("/api/invoices", invoiceRoutes);
   app.route("/api/admin", adminRoutes);
   app.route("/api/storage", storageRoutes);
+  app.route("/api/redemption-codes", redemptionCodeRoutes);
 
   return app;
 }

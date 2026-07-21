@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, Check, X } from "lucide-react";
+import { ArrowLeft, Check, X, Ticket } from "lucide-react";
 import type { Brand, Deal } from "@perkhub/shared";
 import { apiClient } from "@/lib/api-client";
 import { DashboardShell, EmptyState } from "@/components/perk/DashboardShell";
@@ -114,13 +114,24 @@ function AdminDeals() {
                   brand={brandMap.get(d.brandId)}
                   actions={
                     d.status === "published" ? (
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => setStatus.mutate({ id: d.id, status: "expired" })}
-                      >
-                        Unpublish
-                      </Button>
+                      <>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          asChild
+                        >
+                          <Link to={`/brand/deals/${d.id}/redemption-codes`}>
+                            <Ticket className="mr-1.5 h-4 w-4" /> Manage codes
+                          </Link>
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => setStatus.mutate({ id: d.id, status: "expired" })}
+                        >
+                          Unpublish
+                        </Button>
+                      </>
                     ) : d.status === "rejected" || d.status === "draft" ? (
                       <Button
                         size="sm"

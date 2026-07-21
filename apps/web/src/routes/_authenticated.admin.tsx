@@ -6,7 +6,10 @@ export const Route = createFileRoute("/_authenticated/admin")({
   ssr: false,
   beforeLoad: async () => {
     const roles = await apiClient<{ role: AppRole }[]>("/roles/me");
-    if (!roles.some((r) => r.role === "admin")) throw redirect({ to: "/app" });
+    const hasAccess = roles.some((r) =>
+      ["super_admin", "admin", "affiliation_admin", "commerce_admin"].includes(r.role)
+    );
+    if (!hasAccess) throw redirect({ to: "/app" });
   },
   component: () => <Outlet />,
 });
