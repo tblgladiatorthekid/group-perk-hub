@@ -1,7 +1,9 @@
 import type {
   AffiliationType,
+  AdminSubRole,
   AppRole,
   BrandStatus,
+  BrandSubRole,
   CommissionStatus,
   CommissionType,
   DealChannel,
@@ -9,6 +11,7 @@ import type {
   DiscountType,
   InvoiceStatus,
   MembershipStatus,
+  RedemptionCodeStatus,
   TransactionStatus,
   VerificationMethod,
 } from "./enums";
@@ -165,4 +168,17 @@ export interface ClerkWebhookEvent {
     created_at: number;
     updated_at: number;
   };
+}
+
+export interface RedemptionCode {
+  id: string;
+  dealId: string;
+  brandId: string;
+  code: string;
+  status: RedemptionCodeStatus;
+  maxUses: number;
+  useCount: number;
+  expiresAt: string | null;
+  createdBy: string;
+  createdAt: string;
 }

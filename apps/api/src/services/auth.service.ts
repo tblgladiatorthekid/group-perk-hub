@@ -7,9 +7,6 @@ interface ClerkUserEventData {
   email_addresses: { email_address: string; id: string }[];
   first_name: string | null;
   last_name: string | null;
-  // Only unsafe_metadata is settable by the client SDK during sign-up;
-  // public_metadata requires a backend/dashboard call, so intended_role
-  // (set by the frontend at signup) always arrives via unsafe_metadata.
   unsafe_metadata?: Record<string, unknown>;
 }
 
@@ -23,6 +20,18 @@ export async function handleUserCreated(db: Db, eventData: ClerkUserEventData) {
   const intendedRole = unsafe_metadata?.intended_role as string | undefined;
   if (intendedRole === "brand" || intendedRole === "brand_partner") {
     await userRolesRepo.addRole(db, id, "brand_partner");
+  }
+  if (intendedRole === "super_admin") {
+    await userRolesRepo.addRole(db, id, "super_admin");
+  }
+  if (intendedRole === "affiliation_admin") {
+    await userRolesRepo.addRole(db, id, "affiliation_admin");
+  }
+  if (intendedRole === "commerce_admin") {
+    await userRolesRepo.addRole(db, id, "commerce_admin");
+  }
+  if (intendedRole === "brand_manager") {
+    await userRolesRepo.addRole(db, id, "brand_manager");
   }
 }
 

@@ -1,6 +1,13 @@
 import { pgEnum } from "drizzle-orm/pg-core";
 
-export const appRoleEnum = pgEnum("app_role", ["consumer", "brand_partner", "admin"]);
+export const appRoleEnum = pgEnum("app_role", [
+  "consumer",
+  "brand_partner",
+  "brand_manager",
+  "super_admin",
+  "affiliation_admin",
+  "commerce_admin",
+]);
 export const affiliationTypeEnum = pgEnum("affiliation_type", [
   "cooperative",
   "alumni",
@@ -46,3 +53,9 @@ export const transactionStatusEnum = pgEnum("transaction_status", [
 ]);
 export const commissionStatusEnum = pgEnum("commission_status", ["pending", "invoiced", "paid"]);
 export const invoiceStatusEnum = pgEnum("invoice_status", ["draft", "sent", "paid", "overdue", "void"]);
+export const redemptionCodeStatusEnum = pgEnum("redemption_code_status", [
+  "active",
+  "used",
+  "expired",
+  "cancelled",
+]);

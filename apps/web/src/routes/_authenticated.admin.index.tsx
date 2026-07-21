@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { BarChart3, LayoutDashboard, ShieldCheck, Store, Tag, Users, Wallet } from "lucide-react";
+import { BarChart3, LayoutDashboard, ShieldCheck, Store, Tag, Users } from "lucide-react";
 import { apiClient } from "@/lib/api-client";
 import { DashboardShell } from "@/components/perk/DashboardShell";
 import { Button } from "@/components/ui/button";
@@ -16,8 +16,6 @@ const nav = [
   { to: "/admin/deals", label: "Deals", icon: <Tag className="h-4 w-4" /> },
   { to: "/admin/groups", label: "Groups", icon: <Users className="h-4 w-4" /> },
   { to: "/admin/analytics", label: "Analytics", icon: <BarChart3 className="h-4 w-4" /> },
-  { to: "/brand/transactions", label: "Transactions", icon: <BarChart3 className="h-4 w-4" /> },
-  { to: "/brand/commissions", label: "Commissions", icon: <Wallet className="h-4 w-4" /> },
 ];
 
 interface AdminStats {
@@ -25,6 +23,7 @@ interface AdminStats {
   brands: number;
   pendingVerifications: number;
   transactions: number;
+  activeRedemptionCodes: number;
 }
 
 function AdminHome() {
@@ -40,12 +39,13 @@ function AdminHome() {
       nav={nav}
       accent="Admin"
     >
-      <div className="grid gap-4 md:grid-cols-4">
+      <div className="grid gap-4 md:grid-cols-5">
         {[
           { k: "Affiliation groups", v: counts?.groups ?? 0 },
           { k: "Brands", v: counts?.brands ?? 0 },
           { k: "Pending verifications", v: counts?.pendingVerifications ?? 0 },
           { k: "Redemptions", v: counts?.transactions ?? 0 },
+          { k: "Active codes", v: counts?.activeRedemptionCodes ?? 0 },
         ].map((s) => (
           <div key={s.k} className="rounded-2xl border border-border bg-card p-5">
             <div className="text-xs font-medium text-muted-foreground">{s.k}</div>

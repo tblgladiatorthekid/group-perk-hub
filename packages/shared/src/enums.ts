@@ -1,5 +1,11 @@
-export const APP_ROLES = ["consumer", "brand_partner", "admin"] as const;
+export const APP_ROLES = ["consumer", "brand_partner", "brand_manager", "super_admin", "affiliation_admin", "commerce_admin"] as const;
 export type AppRole = (typeof APP_ROLES)[number];
+
+export const ADMIN_SUB_ROLES = ["super_admin", "affiliation_admin", "commerce_admin"] as const;
+export type AdminSubRole = (typeof ADMIN_SUB_ROLES)[number];
+
+export const BRAND_SUB_ROLES = ["brand_manager"] as const;
+export type BrandSubRole = (typeof BRAND_SUB_ROLES)[number];
 
 export const AFFILIATION_TYPES = [
   "cooperative",
@@ -42,3 +48,6 @@ export type CommissionStatus = (typeof COMMISSION_STATUSES)[number];
 
 export const INVOICE_STATUSES = ["draft", "sent", "paid", "overdue", "void"] as const;
 export type InvoiceStatus = (typeof INVOICE_STATUSES)[number];
+
+export const REDEMPTION_CODE_STATUSES = ["active", "used", "expired", "cancelled"] as const;
+export type RedemptionCodeStatus = (typeof REDEMPTION_CODE_STATUSES)[number];
