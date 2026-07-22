@@ -12,7 +12,7 @@ export const redemptionCodeRoutes = new Hono();
 redemptionCodeRoutes.get("/", requireAuth, async (c) => {
   const userId = c.var.userId;
   const roles = await userRolesRepo.getRolesForUser(db, userId);
-  const isAdmin = roles.some((r) => ["super_admin", "admin", "affiliation_admin", "commerce_admin"].includes(r.role));
+  const isAdmin = roles.some((r) => ["super_admin", "affiliation_admin", "commerce_admin"].includes(r.role));
   const isBrand = roles.some((r) => ["brand_partner", "brand_manager"].includes(r.role));
 
   const brandId = c.req.query("brandId");
@@ -50,7 +50,7 @@ redemptionCodeRoutes.post("/", requireAuth, async (c) => {
   const roles = await userRolesRepo.getRolesForUser(db, userId);
   const isBrandOwner = brand.ownerUserId === userId;
   const isBrandManager = roles.some((r) => r.role === "brand_manager");
-  const isAdmin = roles.some((r) => ["super_admin", "admin", "affiliation_admin", "commerce_admin"].includes(r.role));
+  const isAdmin = roles.some((r) => ["super_admin", "affiliation_admin", "commerce_admin"].includes(r.role));
 
   if (!isBrandOwner && !isBrandManager && !isAdmin) {
     return c.json({ error: "Forbidden" }, 403);
@@ -104,7 +104,7 @@ redemptionCodeRoutes.patch("/:code", requireAuth, async (c) => {
   const roles = await userRolesRepo.getRolesForUser(db, userId);
   const isBrandOwner = brand.ownerUserId === userId;
   const isBrandManager = roles.some((r) => r.role === "brand_manager");
-  const isAdmin = roles.some((r) => ["super_admin", "admin", "affiliation_admin", "commerce_admin"].includes(r.role));
+  const isAdmin = roles.some((r) => ["super_admin", "affiliation_admin", "commerce_admin"].includes(r.role));
 
   if (!isBrandOwner && !isBrandManager && !isAdmin) {
     return c.json({ error: "Forbidden" }, 403);
@@ -127,7 +127,7 @@ redemptionCodeRoutes.delete("/:code", requireAuth, async (c) => {
   const roles = await userRolesRepo.getRolesForUser(db, userId);
   const isBrandOwner = brand.ownerUserId === userId;
   const isBrandManager = roles.some((r) => r.role === "brand_manager");
-  const isAdmin = roles.some((r) => ["super_admin", "admin", "affiliation_admin", "commerce_admin"].includes(r.role));
+  const isAdmin = roles.some((r) => ["super_admin", "affiliation_admin", "commerce_admin"].includes(r.role));
 
   if (!isBrandOwner && !isBrandManager && !isAdmin) {
     return c.json({ error: "Forbidden" }, 403);

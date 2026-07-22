@@ -15,6 +15,9 @@ import { invoiceRoutes } from "./routes/invoices";
 import { adminRoutes } from "./routes/admin";
 import { storageRoutes } from "./routes/storage";
 import { redemptionCodeRoutes } from "./routes/redemption-codes";
+import { db } from "./db/client";
+import * as dealsRepo from "./repositories/deals.repo";
+import * as transactionsRepo from "./repositories/transactions.repo";
 
 export function createApp() {
   const app = new Hono();
@@ -48,9 +51,47 @@ export function createApp() {
   return app;
 }
 
+function startAutoExpireChecker() {
+  const CHECK_INTERVAL_MS = 60 * 60 * 1000;
+
+  async function runCheck() {
+    try {
+      const publishedDeals = await dealsRepo.listDeals(db, { status: "published" });
+      const now = new Date();
+      let expiredCount = 0;
+
+      for (const deal of publishedDeals) {
+        if (!deal.autoExpirePoorPerformance || deal.performanceThreshold === null || deal.performanceThreshold === undefined) {
+          continue;
+        }
+        const elapsed = now.getTime() - new Date(deal.createdAt).getTime();
+        const hoursElapsed = elapsed / (1000 * 60 * 60);
+        if (hoursElapsed < (deal.performanceCheckHours ?? 48)) continue;
+
+        const redemptionCount = await transactionsRepo.getDealRedemptionCount(db, deal.id, deal.createdAt);
+        if (redemptionCount < deal.performanceThreshold) {
+          await dealsRepo.updateDeal(db, deal.id, { status: "expired" });
+          expiredCount++;
+        }
+      }
+
+      if (expiredCount > 0) {
+        console.log(`[auto-expire] Expired ${expiredCount} poor-performing deal(s)`);
+      }
+    } catch (error) {
+      console.error("[auto-expire] Check failed:", error);
+    }
+  }
+
+  runCheck();
+  setInterval(runCheck, CHECK_INTERVAL_MS);
+}
+
 if (process.env.NODE_ENV !== "test") {
   const app = createApp();
   const port = Number.parseInt(process.env.API_PORT || "3001", 10);
+
+  startAutoExpireChecker();
 
   serve({ fetch: app.fetch, port });
   console.log(`API server running at http://localhost:${port}`);

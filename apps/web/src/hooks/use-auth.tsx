@@ -25,7 +25,7 @@ export function useRoles() {
 
 export function primaryRole(roles: AppRole[] | undefined): AppRole {
   if (!roles || roles.length === 0) return "consumer";
-  if (roles.includes("super_admin") || roles.includes("admin")) return "super_admin";
+  if (roles.includes("super_admin")) return "super_admin";
   if (roles.includes("affiliation_admin")) return "affiliation_admin";
   if (roles.includes("commerce_admin")) return "commerce_admin";
   if (roles.includes("brand_partner") || roles.includes("brand_manager")) return "brand_partner";
@@ -33,7 +33,7 @@ export function primaryRole(roles: AppRole[] | undefined): AppRole {
 }
 
 export function homePathFor(role: AppRole): string {
-  if (role === "super_admin" || role === "admin") return "/admin";
+  if (role === "super_admin") return "/admin";
   if (role === "affiliation_admin") return "/admin/groups";
   if (role === "commerce_admin") return "/admin/deals";
   if (role === "brand_partner" || role === "brand_manager") return "/brand";
@@ -43,7 +43,7 @@ export function homePathFor(role: AppRole): string {
 export function hasAdminAccess(roles: AppRole[] | undefined): boolean {
   if (!roles) return false;
   return roles.some((r) =>
-    ["super_admin", "admin", "affiliation_admin", "commerce_admin"].includes(r),
+    ["super_admin", "affiliation_admin", "commerce_admin"].includes(r),
   );
 }
 

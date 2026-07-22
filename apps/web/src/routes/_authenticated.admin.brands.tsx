@@ -7,6 +7,7 @@ import { DashboardShell, EmptyState } from "@/components/perk/DashboardShell";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
+import { useRoles } from "@/hooks/use-auth";
 
 export const Route = createFileRoute("/_authenticated/admin/brands")({
   component: AdminBrands,
@@ -14,6 +15,8 @@ export const Route = createFileRoute("/_authenticated/admin/brands")({
 
 function AdminBrands() {
   const qc = useQueryClient();
+  const { data: roles } = useRoles();
+  const isSuperAdmin = roles?.includes("super_admin") ?? false;
   const { data: brands, isLoading } = useQuery({
     queryKey: ["admin-brands"],
     queryFn: () => apiClient<Brand[]>("/brands?status=all"),
@@ -62,21 +65,23 @@ function AdminBrands() {
                   key={b.id}
                   b={b}
                   actions={
-                    <>
-                      <Button
-                        size="sm"
-                        onClick={() => setStatus.mutate({ id: b.id, status: "approved" })}
-                      >
-                        <Check className="mr-1.5 h-4 w-4" /> Approve
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => setStatus.mutate({ id: b.id, status: "suspended" })}
-                      >
-                        <X className="mr-1.5 h-4 w-4" /> Reject
-                      </Button>
-                    </>
+                    isSuperAdmin ? (
+                      <>
+                        <Button
+                          size="sm"
+                          onClick={() => setStatus.mutate({ id: b.id, status: "approved" })}
+                        >
+                          <Check className="mr-1.5 h-4 w-4" /> Approve
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => setStatus.mutate({ id: b.id, status: "suspended" })}
+                        >
+                          <X className="mr-1.5 h-4 w-4" /> Reject
+                        </Button>
+                      </>
+                    ) : null
                   }
                 />
               ))
@@ -89,22 +94,24 @@ function AdminBrands() {
                 key={b.id}
                 b={b}
                 actions={
-                  b.status === "approved" ? (
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => setStatus.mutate({ id: b.id, status: "suspended" })}
-                    >
-                      Suspend
-                    </Button>
-                  ) : (
-                    <Button
-                      size="sm"
-                      onClick={() => setStatus.mutate({ id: b.id, status: "approved" })}
-                    >
-                      Reinstate
-                    </Button>
-                  )
+                  isSuperAdmin ? (
+                    b.status === "approved" ? (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => setStatus.mutate({ id: b.id, status: "suspended" })}
+                      >
+                        Suspend
+                      </Button>
+                    ) : (
+                      <Button
+                        size="sm"
+                        onClick={() => setStatus.mutate({ id: b.id, status: "approved" })}
+                      >
+                        Reinstate
+                      </Button>
+                    )
+                  ) : null
                 }
               />
             ))}

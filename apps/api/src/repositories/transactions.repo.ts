@@ -1,6 +1,6 @@
 import type { Db } from "../db/client";
 import { transactions } from "../db/schema";
-import { eq, desc, and } from "drizzle-orm";
+import { eq, desc, and, gte, sql } from "drizzle-orm";
 
 export async function listTransactions(db: Db, filter?: { userId?: string; brandId?: string }) {
   const conditions = [];
@@ -32,4 +32,28 @@ export async function updateTransaction(
     .where(eq(transactions.id, id))
     .returning();
   return rows[0] ?? null;
+}
+
+export async function getWeeklyRedemptionCount(db: Db, userId: string, weekStart: Date) {
+  const rows = await db
+    .select({ count: sql<number>`count(*)::int` })
+    .from(transactions)
+    .where(and(eq(transactions.userId, userId), gte(transactions.createdAt, weekStart)));
+  return rows[0]?.count ?? 0;
+}
+
+export async function getDealRedemptionCount(db: Db, dealId: string, since: Date) {
+  const rows = await db
+    .select({ count: sql<number>`count(*)::int` })
+    .from(transactions)
+    .where(and(eq(transactions.dealId, dealId), gte(transactions.createdAt, since)));
+  return rows[0]?.count ?? 0;
+}
+
+export async function getDealUniqueRedeemers(db: Db, dealId: string, since: Date) {
+  const rows = await db
+    .select({ count: sql<number>`count(distinct ${transactions.userId})::int` })
+    .from(transactions)
+    .where(and(eq(transactions.dealId, dealId), gte(transactions.createdAt, since)));
+  return rows[0]?.count ?? 0;
 }

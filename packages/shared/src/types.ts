@@ -7,6 +7,7 @@ import type {
   CommissionStatus,
   CommissionType,
   DealChannel,
+  DealDurationType,
   DealStatus,
   DiscountType,
   InvoiceStatus,
@@ -111,6 +112,11 @@ export interface Deal {
   rejectionReason: string | null;
   createdAt: string;
   updatedAt: string;
+  durationType: DealDurationType | null;
+  redemptionLimit: number | null;
+  performanceThreshold: number | null;
+  performanceCheckHours: number | null;
+  autoExpirePoorPerformance: boolean | null;
 }
 
 export interface SavedDeal {

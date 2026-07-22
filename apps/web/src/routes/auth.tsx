@@ -14,7 +14,6 @@ const searchSchema = z.object({
   role: z
     .enum([
       "consumer",
-      "brand",
       "brand_partner",
       "brand_manager",
       "super_admin",
@@ -27,7 +26,6 @@ const searchSchema = z.object({
 
 function normalizeRole(role: string | undefined): SignupRole | undefined {
   if (!role) return undefined;
-  if (role === "brand") return "brand_partner";
   return role as SignupRole;
 }
 
@@ -153,8 +151,9 @@ function AuthPage() {
   if (resolving) return <RoleRedirect />;
 
   const getFallbackRedirect = (role: SignupRole): string => {
-    if (role === "super_admin" || role === "affiliation_admin" || role === "commerce_admin")
-      return "/admin";
+    if (role === "super_admin") return "/admin";
+    if (role === "affiliation_admin") return "/admin/groups";
+    if (role === "commerce_admin") return "/admin/deals";
     if (role === "brand_partner" || role === "brand_manager") return "/brand";
     return "/app";
   };

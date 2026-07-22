@@ -6,7 +6,7 @@ import * as userRolesRepo from "../repositories/userRoles.repo";
 
 export const brandRoutes = new Hono();
 
-// Public list: only approved by default. `?status=all|pending|approved` requires super_admin for non-approved.
+// Public list: only approved by default. `?status=all|pending|approved` requires admin sub-role for non-approved.
 brandRoutes.get("/", async (c) => {
   const status = c.req.query("status") ?? "approved";
   const all = await brandsRepo.listBrands(db);
@@ -15,7 +15,6 @@ brandRoutes.get("/", async (c) => {
     return c.json(all.filter((b) => b.status === "approved"));
   }
 
-  // Non-public statuses require super_admin
   const sessionToken = c.req.header("Authorization")?.replace("Bearer ", "");
   if (!sessionToken) return c.json({ error: "Unauthorized" }, 401);
   try {
@@ -27,7 +26,8 @@ brandRoutes.get("/", async (c) => {
     const auth = await clerkClient.authenticateRequest(c.req.raw);
     if (!auth.isSignedIn) return c.json({ error: "Unauthorized" }, 401);
     const uid = auth.toAuth().userId!;
-    const isAdmin = await userRolesRepo.hasRole(db, uid, "super_admin");
+    const roles = await userRolesRepo.getRolesForUser(db, uid);
+    const isAdmin = roles.some((r) => ["super_admin", "affiliation_admin", "commerce_admin"].includes(r.role));
     if (!isAdmin) return c.json({ error: "Forbidden" }, 403);
   } catch {
     return c.json({ error: "Unauthorized" }, 401);

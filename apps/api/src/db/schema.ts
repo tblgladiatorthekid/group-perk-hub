@@ -17,6 +17,7 @@ import {
   commissionStatusEnum,
   commissionTypeEnum,
   dealChannelEnum,
+  dealDurationTypeEnum,
   dealStatusEnum,
   discountTypeEnum,
   invoiceStatusEnum,
@@ -142,6 +143,11 @@ export const deals = pgTable("deals", {
   rejectionReason: text("rejection_reason"),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
+  durationType: dealDurationTypeEnum("duration_type"),
+  redemptionLimit: integer("redemption_limit"),
+  performanceThreshold: integer("performance_threshold").default(0),
+  performanceCheckHours: integer("performance_check_hours").default(48),
+  autoExpirePoorPerformance: boolean("auto_expire_poor_performance").default(false),
 });
 
 export const savedDeals = pgTable(

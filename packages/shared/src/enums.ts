@@ -31,6 +31,9 @@ export type BrandStatus = (typeof BRAND_STATUSES)[number];
 export const DEAL_STATUSES = ["draft", "pending_review", "published", "rejected", "expired"] as const;
 export type DealStatus = (typeof DEAL_STATUSES)[number];
 
+export const DEAL_DURATION_TYPES = ["one_time", "monthly", "half_yearly", "yearly"] as const;
+export type DealDurationType = (typeof DEAL_DURATION_TYPES)[number];
+
 export const DISCOUNT_TYPES = ["percent", "fixed", "bogo", "free_item"] as const;
 export type DiscountType = (typeof DISCOUNT_TYPES)[number];
 

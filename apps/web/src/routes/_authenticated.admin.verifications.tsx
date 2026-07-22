@@ -19,6 +19,7 @@ import { Label } from "@/components/ui/label";
 import { VerifiedBadge } from "@/components/perk/VerifiedBadge";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
+import { useRoles } from "@/hooks/use-auth";
 
 export const Route = createFileRoute("/_authenticated/admin/verifications")({
   component: VerificationsQueue,
@@ -27,7 +28,7 @@ export const Route = createFileRoute("/_authenticated/admin/verifications")({
 const nav = [
   { to: "/admin", label: "Overview", icon: <LayoutDashboard className="h-4 w-4" /> },
   { to: "/admin/verifications", label: "Verifications", icon: <ShieldCheck className="h-4 w-4" /> },
-  { to: "/admin", label: "Brands (soon)", icon: <Store className="h-4 w-4" /> },
+  { to: "/admin/brands", label: "Brands", icon: <Store className="h-4 w-4" /> },
   { to: "/admin/groups", label: "Groups", icon: <Users className="h-4 w-4" /> },
   { to: "/admin/analytics", label: "Analytics", icon: <BarChart3 className="h-4 w-4" /> },
 ];
@@ -38,6 +39,8 @@ type Row = UserMembership & { group: AffiliationGroup | null; profile: Profile |
 
 function VerificationsQueue() {
   const qc = useQueryClient();
+  const { data: roles } = useRoles();
+  const isSuperAdmin = roles?.includes("super_admin") ?? false;
   const [status, setStatus] = useState<Status>("pending");
   const [reasons, setReasons] = useState<Record<string, string>>({});
 
@@ -185,22 +188,26 @@ function VerificationsQueue() {
                     />
                   </div>
                   <div className="flex gap-2">
-                    <Button
-                      variant="outline"
-                      onClick={() =>
-                        decide.mutate({ id: r.id, to: "rejected", reason: reasons[r.id] })
-                      }
-                      disabled={decide.isPending}
-                    >
-                      Reject
-                    </Button>
-                    <Button
-                      onClick={() => decide.mutate({ id: r.id, to: "verified" })}
-                      disabled={decide.isPending}
-                    >
-                      {decide.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
-                      Approve
-                    </Button>
+                    {isSuperAdmin && (
+                      <Button
+                        variant="outline"
+                        onClick={() =>
+                          decide.mutate({ id: r.id, to: "rejected", reason: reasons[r.id] })
+                        }
+                        disabled={decide.isPending}
+                      >
+                        Reject
+                      </Button>
+                    )}
+                    {isSuperAdmin && (
+                      <Button
+                        onClick={() => decide.mutate({ id: r.id, to: "verified" })}
+                        disabled={decide.isPending}
+                      >
+                        {decide.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
+                        Approve
+                      </Button>
+                    )}
                   </div>
                 </div>
               )}
