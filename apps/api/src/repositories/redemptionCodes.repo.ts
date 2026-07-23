@@ -35,7 +35,7 @@ export async function getRedemptionCodesByBrand(db: Db, brandId: string) {
   return db.select().from(redemptionCodes).where(eq(redemptionCodes.brandId, brandId));
 }
 
-export async function updateRedemptionCode(db: Db, code: string, data: Partial<RedemptionCode>) {
+export async function updateRedemptionCode(db: Db, code: string, data: Partial<typeof redemptionCodes.$inferInsert>) {
   const rows = await db
     .update(redemptionCodes)
     .set(data)
@@ -60,7 +60,7 @@ export async function markRedemptionCodeUsed(db: Db, code: string) {
   return rows[0] ?? null;
 }
 
-export async function listRedemptionCodes(db: Db, filter?: { brandId?: string; dealId?: string; status?: string }) {
+export async function listRedemptionCodes(db: Db, filter?: { brandId?: string; dealId?: string; status?: "active" | "used" | "expired" | "cancelled" }) {
   const conditions = [];
   if (filter?.brandId) conditions.push(eq(redemptionCodes.brandId, filter.brandId));
   if (filter?.dealId) conditions.push(eq(redemptionCodes.dealId, filter.dealId));

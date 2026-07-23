@@ -5,7 +5,7 @@ import * as userRolesRepo from "../repositories/userRoles.repo";
 import * as analyticsService from "../services/analytics.service";
 import * as dealsRepo from "../repositories/deals.repo";
 import * as transactionsRepo from "../repositories/transactions.repo";
-import { profiles, userMemberships, affiliationGroups, brands, transactions, redemptionCodes } from "../db/schema";
+import { profiles, userMemberships, affiliationGroups, brands, transactions, redemptionCodes, userRoles as userRolesTable } from "../db/schema";
 import { count, eq } from "drizzle-orm";
 import type { AppRole, Deal } from "@perkhub/shared";
 
@@ -27,7 +27,8 @@ adminRoutes.get("/stats", async (c) => {
     ]);
 
   const publishedDeals = await dealsRepo.listDeals(db, { status: "published" });
-  const poorPerforming: Deal[] = [];
+  type PoorPerformingDeal = Deal & { redemptionCount: number };
+  const poorPerforming: PoorPerformingDeal[] = [];
   const now = new Date();
   for (const deal of publishedDeals) {
     if (!deal.autoExpirePoorPerformance || deal.performanceThreshold === null || deal.performanceThreshold === undefined) {
@@ -105,13 +106,23 @@ adminRoutes.get("/analytics", async (c) => {
   return c.json(analytics);
 });
 
+adminRoutes.get("/redemption-codes/analytics", async (c) => {
+  const userId = c.var.userId;
+  const roles = await userRolesRepo.getRolesForUser(db, userId);
+  const isAdmin = roles.some((r) => ["super_admin", "affiliation_admin", "commerce_admin"].includes(r.role));
+  if (!isAdmin) return c.json({ error: "Forbidden" }, 403);
+
+  const data = await analyticsService.getRedemptionCodeAnalytics(db);
+  return c.json(data);
+});
+
 adminRoutes.get("/sub-users", async (c) => {
   const userId = c.var.userId;
   const roles = await userRolesRepo.getRolesForUser(db, userId);
   const isSuperAdmin = roles.some((r) => r.role === "super_admin");
   if (!isSuperAdmin) return c.json({ error: "Forbidden" }, 403);
 
-  const allRoles = await db.select().from(userRoles);
+  const allRoles = await db.select().from(userRolesTable);
   return c.json(allRoles);
 });
 

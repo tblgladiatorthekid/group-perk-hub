@@ -81,6 +81,28 @@ dealRoutes.post("/", requireAuth, async (c) => {
     return c.json({ error: "Invalid durationType" }, 400);
   }
 
+  const monthsMap: Record<string, number> = {
+    monthly: 1,
+    half_yearly: 6,
+    yearly: 12,
+  };
+
+  if (body.durationType && body.durationType !== "one_time" && body.startDate) {
+    const startDate = new Date(body.startDate);
+    const months = monthsMap[body.durationType];
+    const endDate = new Date(startDate);
+    endDate.setMonth(endDate.getMonth() + months);
+    if (!body.endDate) {
+      body.endDate = endDate.toISOString();
+    } else {
+      const userEndDate = new Date(body.endDate);
+      const serverEndDate = new Date(endDate);
+      if (userEndDate.getTime() !== serverEndDate.getTime()) {
+        return c.json({ error: `endDate must be ${months} month(s) after startDate for ${body.durationType} duration` }, 400);
+      }
+    }
+  }
+
   // Non-super_admin submissions default to pending_review
   const payload = { ...body };
   if (!isAdmin) payload.status = "pending_review";
@@ -120,6 +142,30 @@ dealRoutes.patch("/:id", requireAuth, async (c) => {
       return c.json({ error: "Invalid durationType" }, 400);
     }
   }
+
+  const monthsMap: Record<string, number> = {
+    monthly: 1,
+    half_yearly: 6,
+    yearly: 12,
+  };
+
+  const effectiveDurationType = body.durationType ?? deal.durationType;
+  const effectiveStartDate = body.startDate ? new Date(body.startDate) : new Date(deal.startDate);
+
+  if (effectiveDurationType && effectiveDurationType !== "one_time" && effectiveStartDate) {
+    const months = monthsMap[effectiveDurationType];
+    const calculatedEndDate = new Date(effectiveStartDate);
+    calculatedEndDate.setMonth(calculatedEndDate.getMonth() + months);
+    if (!body.endDate) {
+      body.endDate = calculatedEndDate.toISOString();
+    } else {
+      const userEndDate = new Date(body.endDate);
+      if (userEndDate.getTime() !== calculatedEndDate.getTime()) {
+        return c.json({ error: `endDate must be ${months} month(s) after startDate for ${effectiveDurationType} duration` }, 400);
+      }
+    }
+  }
+
   if (body.startDate) body.startDate = new Date(body.startDate);
   if (body.endDate) body.endDate = new Date(body.endDate);
   const updated = await dealsRepo.updateDeal(db, c.req.param("id"), body);

@@ -12,6 +12,16 @@ export interface AdminAnalytics {
   histogram: { bucket: string; count: number }[];
 }
 
+export interface RedemptionCodeAnalytics {
+  totalCodes: number;
+  totalRedemptions: number;
+  codesByStatus: { status: string; count: number }[];
+  topDealsByRedemptions: { dealId: string; dealTitle: string; codeCount: number; redemptionCount: number }[];
+  topBrandsByRedemptions: { brandId: string; brandName: string; redemptionCount: number }[];
+  dailyRedemptions: { date: string; count: number }[];
+  recentRedemptions: { id: string; code: string; dealTitle: string; brandName: string; redeemedAt: string | null }[];
+}
+
 export async function getAdminAnalytics(db: Db, year: number): Promise<AdminAnalytics> {
   const [monthlyRows, brandRows, statusRows, histogramRows] = await Promise.all([
     analyticsRepo.getMonthlyCommissionAggregates(db, year),
@@ -50,4 +60,8 @@ export async function getAdminAnalytics(db: Db, year: number): Promise<AdminAnal
   }));
 
   return { year, monthly, byBrand, byStatus, histogram };
+}
+
+export async function getRedemptionCodeAnalytics(db: Db): Promise<RedemptionCodeAnalytics> {
+  return analyticsRepo.getRedemptionCodeAnalytics(db);
 }
