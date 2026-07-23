@@ -27,6 +27,7 @@ import { Route as AuthenticatedAppRedeemRouteImport } from './routes/_authentica
 import { Route as AuthenticatedAppMembershipRouteImport } from './routes/_authenticated.app.membership'
 import { Route as AuthenticatedAppDealsRouteImport } from './routes/_authenticated.app.deals'
 import { Route as AuthenticatedAdminVerificationsRouteImport } from './routes/_authenticated.admin.verifications'
+import { Route as AuthenticatedAdminRedemptionCodesRouteImport } from './routes/_authenticated.admin.redemption-codes'
 import { Route as AuthenticatedAdminGroupsRouteImport } from './routes/_authenticated.admin.groups'
 import { Route as AuthenticatedAdminDealsRouteImport } from './routes/_authenticated.admin.deals'
 import { Route as AuthenticatedAdminBrandsRouteImport } from './routes/_authenticated.admin.brands'
@@ -126,6 +127,12 @@ const AuthenticatedAdminVerificationsRoute =
     path: '/verifications',
     getParentRoute: () => AuthenticatedAdminRoute,
   } as any)
+const AuthenticatedAdminRedemptionCodesRoute =
+  AuthenticatedAdminRedemptionCodesRouteImport.update({
+    id: '/redemption-codes',
+    path: '/redemption-codes',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
 const AuthenticatedAdminGroupsRoute =
   AuthenticatedAdminGroupsRouteImport.update({
     id: '/groups',
@@ -166,6 +173,7 @@ export interface FileRoutesByFullPath {
   '/admin/brands': typeof AuthenticatedAdminBrandsRoute
   '/admin/deals': typeof AuthenticatedAdminDealsRoute
   '/admin/groups': typeof AuthenticatedAdminGroupsRoute
+  '/admin/redemption-codes': typeof AuthenticatedAdminRedemptionCodesRoute
   '/admin/verifications': typeof AuthenticatedAdminVerificationsRoute
   '/app/deals': typeof AuthenticatedAppDealsRoute
   '/app/membership': typeof AuthenticatedAppMembershipRoute
@@ -187,6 +195,7 @@ export interface FileRoutesByTo {
   '/admin/brands': typeof AuthenticatedAdminBrandsRoute
   '/admin/deals': typeof AuthenticatedAdminDealsRoute
   '/admin/groups': typeof AuthenticatedAdminGroupsRoute
+  '/admin/redemption-codes': typeof AuthenticatedAdminRedemptionCodesRoute
   '/admin/verifications': typeof AuthenticatedAdminVerificationsRoute
   '/app/deals': typeof AuthenticatedAppDealsRoute
   '/app/membership': typeof AuthenticatedAppMembershipRoute
@@ -213,6 +222,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/brands': typeof AuthenticatedAdminBrandsRoute
   '/_authenticated/admin/deals': typeof AuthenticatedAdminDealsRoute
   '/_authenticated/admin/groups': typeof AuthenticatedAdminGroupsRoute
+  '/_authenticated/admin/redemption-codes': typeof AuthenticatedAdminRedemptionCodesRoute
   '/_authenticated/admin/verifications': typeof AuthenticatedAdminVerificationsRoute
   '/_authenticated/app/deals': typeof AuthenticatedAppDealsRoute
   '/_authenticated/app/membership': typeof AuthenticatedAppMembershipRoute
@@ -239,6 +249,7 @@ export interface FileRouteTypes {
     | '/admin/brands'
     | '/admin/deals'
     | '/admin/groups'
+    | '/admin/redemption-codes'
     | '/admin/verifications'
     | '/app/deals'
     | '/app/membership'
@@ -260,6 +271,7 @@ export interface FileRouteTypes {
     | '/admin/brands'
     | '/admin/deals'
     | '/admin/groups'
+    | '/admin/redemption-codes'
     | '/admin/verifications'
     | '/app/deals'
     | '/app/membership'
@@ -285,6 +297,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/brands'
     | '/_authenticated/admin/deals'
     | '/_authenticated/admin/groups'
+    | '/_authenticated/admin/redemption-codes'
     | '/_authenticated/admin/verifications'
     | '/_authenticated/app/deals'
     | '/_authenticated/app/membership'
@@ -434,6 +447,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminVerificationsRouteImport
       parentRoute: typeof AuthenticatedAdminRoute
     }
+    '/_authenticated/admin/redemption-codes': {
+      id: '/_authenticated/admin/redemption-codes'
+      path: '/redemption-codes'
+      fullPath: '/admin/redemption-codes'
+      preLoaderRoute: typeof AuthenticatedAdminRedemptionCodesRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
     '/_authenticated/admin/groups': {
       id: '/_authenticated/admin/groups'
       path: '/groups'
@@ -477,6 +497,7 @@ interface AuthenticatedAdminRouteChildren {
   AuthenticatedAdminBrandsRoute: typeof AuthenticatedAdminBrandsRoute
   AuthenticatedAdminDealsRoute: typeof AuthenticatedAdminDealsRoute
   AuthenticatedAdminGroupsRoute: typeof AuthenticatedAdminGroupsRoute
+  AuthenticatedAdminRedemptionCodesRoute: typeof AuthenticatedAdminRedemptionCodesRoute
   AuthenticatedAdminVerificationsRoute: typeof AuthenticatedAdminVerificationsRoute
   AuthenticatedAdminIndexRoute: typeof AuthenticatedAdminIndexRoute
 }
@@ -486,6 +507,8 @@ const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
   AuthenticatedAdminBrandsRoute: AuthenticatedAdminBrandsRoute,
   AuthenticatedAdminDealsRoute: AuthenticatedAdminDealsRoute,
   AuthenticatedAdminGroupsRoute: AuthenticatedAdminGroupsRoute,
+  AuthenticatedAdminRedemptionCodesRoute:
+    AuthenticatedAdminRedemptionCodesRoute,
   AuthenticatedAdminVerificationsRoute: AuthenticatedAdminVerificationsRoute,
   AuthenticatedAdminIndexRoute: AuthenticatedAdminIndexRoute,
 }
