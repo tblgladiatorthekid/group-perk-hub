@@ -7,7 +7,7 @@ import * as userRolesRepo from "../repositories/userRoles.repo";
 
 export const groupRoutes = new Hono();
 
-// Public list: only active by default. `?status=all` requires admin.
+// Public list: only active by default. `?status=all` requires admin sub-role.
 groupRoutes.get("/", async (c) => {
   const status = c.req.query("status") ?? "active";
   const all = await groupsRepo.listGroups(db);
@@ -16,7 +16,6 @@ groupRoutes.get("/", async (c) => {
     return c.json(all.filter((g) => g.active));
   }
 
-  // Non-public statuses require admin
   const sessionToken = c.req.header("Authorization")?.replace("Bearer ", "");
   if (!sessionToken) return c.json({ error: "Unauthorized" }, 401);
   try {
@@ -28,7 +27,8 @@ groupRoutes.get("/", async (c) => {
     const auth = await clerkClient.authenticateRequest(c.req.raw);
     if (!auth.isSignedIn) return c.json({ error: "Unauthorized" }, 401);
     const uid = auth.toAuth().userId!;
-    const isAdmin = await userRolesRepo.hasRole(db, uid, "admin");
+    const roles = await userRolesRepo.getRolesForUser(db, uid);
+    const isAdmin = roles.some((r) => ["super_admin", "affiliation_admin", "commerce_admin"].includes(r.role));
     if (!isAdmin) return c.json({ error: "Forbidden" }, 403);
   } catch {
     return c.json({ error: "Unauthorized" }, 401);
@@ -45,7 +45,7 @@ groupRoutes.get("/:id", async (c) => {
 
 groupRoutes.post("/", requireAuth, async (c) => {
   const userId = c.var.userId;
-  const isAdmin = await userRolesRepo.hasRole(db, userId, "admin");
+  const isAdmin = await userRolesRepo.hasRole(db, userId, "super_admin");
   if (!isAdmin) return c.json({ error: "Forbidden" }, 403);
   const body = await c.req.json();
   const group = await groupsRepo.createGroup(db, body);
@@ -54,7 +54,7 @@ groupRoutes.post("/", requireAuth, async (c) => {
 
 groupRoutes.patch("/:id", requireAuth, async (c) => {
   const userId = c.var.userId;
-  const isAdmin = await userRolesRepo.hasRole(db, userId, "admin");
+  const isAdmin = await userRolesRepo.hasRole(db, userId, "super_admin");
   if (!isAdmin) return c.json({ error: "Forbidden" }, 403);
   const body = await c.req.json();
   const group = await groupsRepo.updateGroup(db, c.req.param("id"), body);
@@ -64,7 +64,7 @@ groupRoutes.patch("/:id", requireAuth, async (c) => {
 
 groupRoutes.delete("/:id", requireAuth, async (c) => {
   const userId = c.var.userId;
-  const isAdmin = await userRolesRepo.hasRole(db, userId, "admin");
+  const isAdmin = await userRolesRepo.hasRole(db, userId, "super_admin");
   if (!isAdmin) return c.json({ error: "Forbidden" }, 403);
   await groupsRepo.deleteGroup(db, c.req.param("id"));
   return c.json({ success: true });
@@ -72,7 +72,7 @@ groupRoutes.delete("/:id", requireAuth, async (c) => {
 
 groupRoutes.get("/:id/whitelist", requireAuth, async (c) => {
   const userId = c.var.userId;
-  const isAdmin = await userRolesRepo.hasRole(db, userId, "admin");
+  const isAdmin = await userRolesRepo.hasRole(db, userId, "super_admin");
   if (!isAdmin) return c.json({ error: "Forbidden" }, 403);
   const entries = await whitelistRepo.listWhitelist(db, c.req.param("id"));
   return c.json(entries);
@@ -80,7 +80,7 @@ groupRoutes.get("/:id/whitelist", requireAuth, async (c) => {
 
 groupRoutes.post("/:id/whitelist", requireAuth, async (c) => {
   const userId = c.var.userId;
-  const isAdmin = await userRolesRepo.hasRole(db, userId, "admin");
+  const isAdmin = await userRolesRepo.hasRole(db, userId, "super_admin");
   if (!isAdmin) return c.json({ error: "Forbidden" }, 403);
   const body = await c.req.json();
   const entry = await whitelistRepo.addWhitelistEntry(db, c.req.param("id"), body.membershipNumber, body.fullName);
@@ -89,7 +89,7 @@ groupRoutes.post("/:id/whitelist", requireAuth, async (c) => {
 
 groupRoutes.delete("/:id/whitelist/:entryId", requireAuth, async (c) => {
   const userId = c.var.userId;
-  const isAdmin = await userRolesRepo.hasRole(db, userId, "admin");
+  const isAdmin = await userRolesRepo.hasRole(db, userId, "super_admin");
   if (!isAdmin) return c.json({ error: "Forbidden" }, 403);
   await whitelistRepo.removeWhitelistEntry(db, c.req.param("entryId"));
   return c.json({ success: true });

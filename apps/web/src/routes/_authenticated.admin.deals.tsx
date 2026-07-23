@@ -1,12 +1,14 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, Check, X, Ticket } from "lucide-react";
+import { ArrowLeft, Check, X, Ticket, Trash2 } from "lucide-react";
 import type { Brand, Deal } from "@perkhub/shared";
 import { apiClient } from "@/lib/api-client";
 import { DashboardShell, EmptyState } from "@/components/perk/DashboardShell";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
+import { useRoles } from "@/hooks/use-auth";
 
 export const Route = createFileRoute("/_authenticated/admin/deals")({
   component: AdminDeals,
@@ -14,6 +16,8 @@ export const Route = createFileRoute("/_authenticated/admin/deals")({
 
 function AdminDeals() {
   const qc = useQueryClient();
+  const { data: roles } = useRoles();
+  const isSuperAdmin = roles?.includes("super_admin") ?? false;
 
   const { data: deals, isLoading } = useQuery({
     queryKey: ["admin-deals"],
@@ -42,7 +46,18 @@ function AdminDeals() {
       }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["admin-deals"] });
+      qc.invalidateQueries({ queryKey: ["admin-counts"] });
       toast.success("Deal updated");
+    },
+    onError: (e) => toast.error(e.message),
+  });
+
+  const deleteDeal = useMutation({
+    mutationFn: (id: string) => apiClient(`/deals/${id}`, { method: "DELETE" }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["admin-deals"] });
+      qc.invalidateQueries({ queryKey: ["admin-counts"] });
+      toast.success("Deal deleted");
     },
     onError: (e) => toast.error(e.message),
   });
@@ -60,7 +75,10 @@ function AdminDeals() {
       {isLoading ? (
         <div className="text-sm text-muted-foreground">Loading…</div>
       ) : deals && deals.length === 0 ? (
-        <EmptyState title="No deals yet" description="Brand partners will submit deals for review here." />
+        <EmptyState
+          title="No deals yet"
+          description="Brand partners will submit deals for review here."
+        />
       ) : (
         <div className="space-y-8">
           <div>
@@ -79,24 +97,30 @@ function AdminDeals() {
                     d={d}
                     brand={brandMap.get(d.brandId)}
                     actions={
-                      <>
-                        <Button
-                          size="sm"
-                          onClick={() => setStatus.mutate({ id: d.id, status: "published" })}
-                        >
-                          <Check className="mr-1.5 h-4 w-4" /> Publish
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => {
-                            const reason = window.prompt("Reason for rejection?") ?? "";
-                            setStatus.mutate({ id: d.id, status: "rejected", rejectionReason: reason });
-                          }}
-                        >
-                          <X className="mr-1.5 h-4 w-4" /> Reject
-                        </Button>
-                      </>
+                      isSuperAdmin ? (
+                        <>
+                          <Button
+                            size="sm"
+                            onClick={() => setStatus.mutate({ id: d.id, status: "published" })}
+                          >
+                            <Check className="mr-1.5 h-4 w-4" /> Publish
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => {
+                              const reason = window.prompt("Reason for rejection?") ?? "";
+                              setStatus.mutate({
+                                id: d.id,
+                                status: "rejected",
+                                rejectionReason: reason,
+                              });
+                            }}
+                          >
+                            <X className="mr-1.5 h-4 w-4" /> Reject
+                          </Button>
+                        </>
+                      ) : null
                     }
                   />
                 ))
@@ -115,30 +139,40 @@ function AdminDeals() {
                   actions={
                     d.status === "published" ? (
                       <>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          asChild
-                        >
+                        <Button asChild variant="outline" size="sm">
                           <Link to={`/brand/deals/${d.id}/redemption-codes`}>
                             <Ticket className="mr-1.5 h-4 w-4" /> Manage codes
                           </Link>
                         </Button>
+                        {isSuperAdmin && (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => setStatus.mutate({ id: d.id, status: "expired" })}
+                          >
+                            Unpublish
+                          </Button>
+                        )}
+                      </>
+                    ) : d.status === "rejected" || d.status === "draft" ? (
+                      isSuperAdmin && (
+                        <Button
+                          size="sm"
+                          onClick={() => setStatus.mutate({ id: d.id, status: "published" })}
+                        >
+                          Publish
+                        </Button>
+                      )
+                    ) : d.status === "expired" ? (
+                      isSuperAdmin && (
                         <Button
                           size="sm"
                           variant="outline"
-                          onClick={() => setStatus.mutate({ id: d.id, status: "expired" })}
+                          onClick={() => deleteDeal.mutate(d.id)}
                         >
-                          Unpublish
+                          <Trash2 className="mr-1.5 h-4 w-4" /> Delete
                         </Button>
-                      </>
-                    ) : d.status === "rejected" || d.status === "draft" ? (
-                      <Button
-                        size="sm"
-                        onClick={() => setStatus.mutate({ id: d.id, status: "published" })}
-                      >
-                        Publish
-                      </Button>
+                      )
                     ) : null
                   }
                 />
@@ -151,15 +185,7 @@ function AdminDeals() {
   );
 }
 
-function DealRow({
-  d,
-  brand,
-  actions,
-}: {
-  d: Deal;
-  brand?: Brand;
-  actions: React.ReactNode;
-}) {
+function DealRow({ d, brand, actions }: { d: Deal; brand?: Brand; actions: React.ReactNode }) {
   return (
     <div className="flex flex-col gap-3 rounded-2xl border border-border bg-card p-5 md:flex-row md:items-start md:justify-between">
       <div>
@@ -168,6 +194,16 @@ function DealRow({
           <Badge variant="outline" className="capitalize">
             {d.status.replace("_", " ")}
           </Badge>
+          {d.durationType && (
+            <Badge variant="secondary" className="capitalize">
+              {d.durationType.replace("_", " ")}
+            </Badge>
+          )}
+          {d.redemptionLimit && (
+            <Badge variant="outline" className="capitalize">
+              Limit: {d.redemptionLimit}
+            </Badge>
+          )}
         </div>
         <div className="mt-0.5 text-xs text-muted-foreground">
           {brand?.name ?? "Unknown brand"} · {d.discountType} {d.discountValue}

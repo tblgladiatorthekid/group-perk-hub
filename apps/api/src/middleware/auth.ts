@@ -51,7 +51,7 @@ export function requireAdminSubRole(...subRoles: AdminSubRole[]) {
     const { userId } = c.var;
     const userRoles = await getRolesFromDb(userId);
     const hasSubRole = subRoles.some((r) => userRoles.includes(r));
-    const isSuperAdmin = userRoles.includes("super_admin") || userRoles.includes("admin");
+    const isSuperAdmin = userRoles.includes("super_admin");
     if (!hasSubRole && !isSuperAdmin) {
       return c.json({ error: "Forbidden: Insufficient permissions" }, 403);
     }

@@ -29,6 +29,7 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
+import { useRoles } from "@/hooks/use-auth";
 
 const groupSchema = z.object({
   name: z.string().min(2, "Name is required"),
@@ -63,6 +64,8 @@ export const Route = createFileRoute("/_authenticated/admin/groups")({
 
 function AdminGroups() {
   const qc = useQueryClient();
+  const { data: roles } = useRoles();
+  const isSuperAdmin = roles?.includes("super_admin") ?? false;
   const [open, setOpen] = useState(false);
   const [editingGroup, setEditingGroup] = useState<AffiliationGroup | null>(null);
   const [whitelistGroup, setWhitelistGroup] = useState<AffiliationGroup | null>(null);
@@ -118,7 +121,10 @@ function AdminGroups() {
         description: v.description?.trim() ? v.description.trim() : null,
         verificationMethods: v.verificationMethods,
         emailDomains: v.emailDomains
-          ? v.emailDomains.split(",").map((d) => d.trim()).filter(Boolean)
+          ? v.emailDomains
+              .split(",")
+              .map((d) => d.trim())
+              .filter(Boolean)
           : [],
         badgeValidityMonths: v.badgeValidityMonths,
       };
@@ -167,9 +173,11 @@ function AdminGroups() {
         <p className="text-sm text-muted-foreground">
           {groups?.length ?? 0} group{groups?.length === 1 ? "" : "s"} total
         </p>
-        <Button onClick={openCreate}>
-          <Plus className="mr-2 h-4 w-4" /> New group
-        </Button>
+        {isSuperAdmin && (
+          <Button onClick={openCreate}>
+            <Plus className="mr-2 h-4 w-4" /> New group
+          </Button>
+        )}
       </div>
 
       {isLoading ? (
@@ -189,7 +197,9 @@ function AdminGroups() {
               <div>
                 <div className="flex items-center gap-2">
                   <div className="font-display text-base font-semibold">{g.name}</div>
-                  <Badge variant="outline" className="capitalize">{g.type}</Badge>
+                  <Badge variant="outline" className="capitalize">
+                    {g.type}
+                  </Badge>
                   <Badge variant={g.active ? "default" : "secondary"}>
                     {g.active ? "Active" : "Inactive"}
                   </Badge>
@@ -210,24 +220,31 @@ function AdminGroups() {
                   {g.emailDomains.length > 0
                     ? `Domains: ${g.emailDomains.join(", ")}`
                     : "No email domains"}{" "}
-                  · Badge valid {g.badgeValidityMonths} month{g.badgeValidityMonths === 1 ? "" : "s"}
+                  · Badge valid {g.badgeValidityMonths} month
+                  {g.badgeValidityMonths === 1 ? "" : "s"}
                 </div>
               </div>
               <div className="flex flex-wrap gap-2">
-                <Button size="sm" variant="outline" onClick={() => openEdit(g)}>
-                  Edit
-                </Button>
-                <Button size="sm" variant="outline" onClick={() => setWhitelistGroup(g)}>
-                  Whitelist
-                </Button>
-                <Button
-                  size="sm"
-                  variant={g.active ? "outline" : "default"}
-                  onClick={() => toggleActive.mutate({ id: g.id, active: !g.active })}
-                  disabled={toggleActive.isPending}
-                >
-                  {g.active ? "Deactivate" : "Activate"}
-                </Button>
+                {isSuperAdmin && (
+                  <Button size="sm" variant="outline" onClick={() => openEdit(g)}>
+                    Edit
+                  </Button>
+                )}
+                {isSuperAdmin && (
+                  <Button size="sm" variant="outline" onClick={() => setWhitelistGroup(g)}>
+                    Whitelist
+                  </Button>
+                )}
+                {isSuperAdmin && (
+                  <Button
+                    size="sm"
+                    variant={g.active ? "outline" : "default"}
+                    onClick={() => toggleActive.mutate({ id: g.id, active: !g.active })}
+                    disabled={toggleActive.isPending}
+                  >
+                    {g.active ? "Deactivate" : "Activate"}
+                  </Button>
+                )}
               </div>
             </div>
           ))}

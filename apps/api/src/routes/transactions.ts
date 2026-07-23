@@ -13,7 +13,7 @@ transactionRoutes.use("/*", requireAuth);
 transactionRoutes.get("/", async (c) => {
   const userId = c.var.userId;
   const roles = await userRolesRepo.getRolesForUser(db, userId);
-  const isAdmin = roles.some((r) => ["super_admin", "admin", "affiliation_admin", "commerce_admin"].includes(r.role));
+  const isAdmin = roles.some((r) => ["super_admin", "affiliation_admin", "commerce_admin"].includes(r.role));
   const isBrand = roles.some((r) => ["brand_partner", "brand_manager"].includes(r.role));
 
   if (isAdmin && c.req.query("userId")) {

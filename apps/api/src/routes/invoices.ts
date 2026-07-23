@@ -10,7 +10,7 @@ invoiceRoutes.use("/*", requireAuth);
 
 invoiceRoutes.get("/", async (c) => {
   const userId = c.var.userId;
-  const isAdmin = await userRolesRepo.hasRole(db, userId, "admin");
+  const isAdmin = await userRolesRepo.hasRole(db, userId, "super_admin");
 
   if (isAdmin) {
     return c.json(await invoicesRepo.listInvoices(db));
@@ -29,7 +29,7 @@ invoiceRoutes.get("/:id", async (c) => {
 
 invoiceRoutes.post("/", async (c) => {
   const userId = c.var.userId;
-  const isAdmin = await userRolesRepo.hasRole(db, userId, "admin");
+  const isAdmin = await userRolesRepo.hasRole(db, userId, "super_admin");
   if (!isAdmin) return c.json({ error: "Forbidden" }, 403);
   const body = await c.req.json();
   const invoice = await invoicesRepo.createInvoice(db, body);
@@ -38,7 +38,7 @@ invoiceRoutes.post("/", async (c) => {
 
 invoiceRoutes.patch("/:id", async (c) => {
   const userId = c.var.userId;
-  const isAdmin = await userRolesRepo.hasRole(db, userId, "admin");
+  const isAdmin = await userRolesRepo.hasRole(db, userId, "super_admin");
   if (!isAdmin) return c.json({ error: "Forbidden" }, 403);
   const body = await c.req.json();
   const invoice = await invoicesRepo.updateInvoice(db, c.req.param("id"), body);

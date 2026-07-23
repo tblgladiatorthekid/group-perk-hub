@@ -1,7 +1,11 @@
 import type { RedemptionCode } from "@perkhub/shared";
 import { apiClient } from "@/lib/api-client";
 
-export async function listRedemptionCodes(filter?: { brandId?: string; dealId?: string; status?: string }) {
+export async function listRedemptionCodes(filter?: {
+  brandId?: string;
+  dealId?: string;
+  status?: string;
+}) {
   const params = new URLSearchParams();
   if (filter?.brandId) params.set("brandId", filter.brandId);
   if (filter?.dealId) params.set("dealId", filter.dealId);

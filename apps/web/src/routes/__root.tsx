@@ -89,8 +89,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { property: "og:title", content: "PerkHub — Verified discounts for Nigeria's tribes" },
       {
         property: "og:description",
-        content:
-          "Verify your membership once. Unlock exclusive perks from partner brands.",
+        content: "Verify your membership once. Unlock exclusive perks from partner brands.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },

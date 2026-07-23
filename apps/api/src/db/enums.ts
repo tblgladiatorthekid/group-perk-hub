@@ -42,6 +42,7 @@ export const dealStatusEnum = pgEnum("deal_status", [
   "rejected",
   "expired",
 ]);
+export const dealDurationTypeEnum = pgEnum("deal_duration_type", ["one_time", "monthly", "half_yearly", "yearly"]);
 export const discountTypeEnum = pgEnum("discount_type", ["percent", "fixed", "bogo", "free_item"]);
 export const dealChannelEnum = pgEnum("deal_channel", ["online", "instore", "both"]);
 export const commissionTypeEnum = pgEnum("commission_type", ["percent", "flat"]);

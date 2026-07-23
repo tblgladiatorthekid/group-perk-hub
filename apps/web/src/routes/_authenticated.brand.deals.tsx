@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
@@ -34,7 +34,7 @@ const dealSchema = z.object({
   title: z.string().min(3),
   description: z.string().min(10),
   terms: z.string().optional(),
-  discountType: z.enum(["percent", "flat", "bogo", "free_item"]),
+  discountType: z.enum(["percent", "fixed", "bogo", "free_item"]),
   discountValue: z.coerce.number().min(0),
   channel: z.enum(["online", "instore", "both"]),
   redemptionUrl: z.string().url().or(z.literal("")).optional(),
@@ -42,6 +42,8 @@ const dealSchema = z.object({
   endDate: z.string().min(1),
   perUserLimit: z.coerce.number().int().min(1).default(1),
   targetGroupIds: z.array(z.string()).min(1, "Pick at least one target group"),
+  durationType: z.enum(["one_time", "monthly", "half_yearly", "yearly"]).optional(),
+  redemptionLimit: z.coerce.number().int().min(50).max(1000).optional().nullable(),
 });
 type DealForm = z.infer<typeof dealSchema>;
 
@@ -69,6 +71,26 @@ function BrandDeals() {
     queryFn: () => apiClient<AffiliationGroup[]>("/groups"),
   });
 
+  useEffect(() => {
+    const type = form.watch("durationType");
+    if (!type || type === "one_time") return;
+    const start = form.watch("startDate");
+    if (!start) return;
+
+    const monthsMap: Record<string, number> = {
+      monthly: 1,
+      half_yearly: 6,
+      yearly: 12,
+    };
+    const months = monthsMap[type];
+    if (!months) return;
+
+    const startDate = new Date(start);
+    const endDate = new Date(startDate);
+    endDate.setMonth(endDate.getMonth() + months);
+    form.setValue("endDate", endDate.toISOString().slice(0, 10));
+  }, [form.watch("durationType"), form.watch("startDate")]);
+
   const form = useForm<DealForm>({
     resolver: zodResolver(dealSchema),
     defaultValues: {
@@ -83,6 +105,8 @@ function BrandDeals() {
       endDate: new Date(Date.now() + 30 * 86400000).toISOString().slice(0, 10),
       perUserLimit: 1,
       targetGroupIds: [],
+      durationType: "one_time",
+      redemptionLimit: null,
     },
   });
 
@@ -228,10 +252,7 @@ function BrandDeals() {
           <DialogHeader>
             <DialogTitle>Compose a deal</DialogTitle>
           </DialogHeader>
-          <form
-            onSubmit={form.handleSubmit((v) => create.mutate(v))}
-            className="space-y-4"
-          >
+          <form onSubmit={form.handleSubmit((v) => create.mutate(v))} className="space-y-4">
             <div className="space-y-1.5">
               <Label>Title</Label>
               <Input {...form.register("title")} placeholder="e.g. 20% off any bowl" />
@@ -244,7 +265,9 @@ function BrandDeals() {
               <Label>Description</Label>
               <Textarea rows={3} {...form.register("description")} />
               {form.formState.errors.description && (
-                <p className="text-xs text-destructive">{form.formState.errors.description.message}</p>
+                <p className="text-xs text-destructive">
+                  {form.formState.errors.description.message}
+                </p>
               )}
             </div>
 
@@ -262,7 +285,7 @@ function BrandDeals() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="percent">Percentage off</SelectItem>
-                    <SelectItem value="flat">Flat naira off</SelectItem>
+                    <SelectItem value="fixed">Flat naira off</SelectItem>
                     <SelectItem value="bogo">Buy one, get one</SelectItem>
                     <SelectItem value="free_item">Free item</SelectItem>
                   </SelectContent>
@@ -315,6 +338,41 @@ function BrandDeals() {
               </div>
             </div>
 
+            <div className="grid gap-3 md:grid-cols-2">
+              <div className="space-y-1.5">
+                <Label>Duration</Label>
+                <Select
+                  value={form.watch("durationType")}
+                  onValueChange={(v: DealForm["durationType"]) =>
+                    form.setValue("durationType", v, { shouldValidate: true })
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="one_time">One-time</SelectItem>
+                    <SelectItem value="monthly">Monthly</SelectItem>
+                    <SelectItem value="half_yearly">6 months</SelectItem>
+                    <SelectItem value="yearly">Yearly</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-1.5">
+                <Label>Redemption limit</Label>
+                <Input
+                  type="number"
+                  min={50}
+                  max={1000}
+                  {...form.register("redemptionLimit")}
+                  placeholder="Unlimited (leave empty)"
+                />
+                <p className="text-xs text-muted-foreground">
+                  Leave empty for unlimited, or enter 50–1000 consumers.
+                </p>
+              </div>
+            </div>
+
             <div className="space-y-1.5">
               <Label>Terms (optional)</Label>
               <Textarea rows={2} {...form.register("terms")} />
@@ -323,31 +381,33 @@ function BrandDeals() {
             <div className="space-y-1.5">
               <Label>Target affiliation groups</Label>
               <div className="grid max-h-52 gap-1.5 overflow-y-auto rounded-md border border-border p-3">
-                {groups?.filter((g) => g.active).map((g) => {
-                  const checked = selectedGroups.includes(g.id);
-                  return (
-                    <label
-                      key={g.id}
-                      className="flex cursor-pointer items-center gap-2 rounded p-1.5 hover:bg-accent"
-                    >
-                      <Checkbox
-                        checked={checked}
-                        onCheckedChange={(v) => {
-                          const next = new Set(selectedGroups);
-                          if (v) next.add(g.id);
-                          else next.delete(g.id);
-                          form.setValue("targetGroupIds", [...next], { shouldValidate: true });
-                        }}
-                      />
-                      <span className="text-sm">
-                        {g.name}
-                        <span className="ml-2 text-xs uppercase text-muted-foreground">
-                          {g.type}
+                {groups
+                  ?.filter((g) => g.active)
+                  .map((g) => {
+                    const checked = selectedGroups.includes(g.id);
+                    return (
+                      <label
+                        key={g.id}
+                        className="flex cursor-pointer items-center gap-2 rounded p-1.5 hover:bg-accent"
+                      >
+                        <Checkbox
+                          checked={checked}
+                          onCheckedChange={(v) => {
+                            const next = new Set(selectedGroups);
+                            if (v) next.add(g.id);
+                            else next.delete(g.id);
+                            form.setValue("targetGroupIds", [...next], { shouldValidate: true });
+                          }}
+                        />
+                        <span className="text-sm">
+                          {g.name}
+                          <span className="ml-2 text-xs uppercase text-muted-foreground">
+                            {g.type}
+                          </span>
                         </span>
-                      </span>
-                    </label>
-                  );
-                })}
+                      </label>
+                    );
+                  })}
               </div>
               {form.formState.errors.targetGroupIds && (
                 <p className="text-xs text-destructive">

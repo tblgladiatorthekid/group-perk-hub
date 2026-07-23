@@ -1,22 +1,20 @@
 import { Hono } from "hono";
-import { requireAuth, requireAdminSubRole, requireBrandSubRole } from "../middleware/auth";
+import { requireAuth, requireAdminSubRole } from "../middleware/auth";
 import { db } from "../db/client";
 import * as userRolesRepo from "../repositories/userRoles.repo";
 import * as analyticsService from "../services/analytics.service";
+import * as dealsRepo from "../repositories/deals.repo";
+import * as transactionsRepo from "../repositories/transactions.repo";
 import { profiles, userMemberships, affiliationGroups, brands, transactions, redemptionCodes } from "../db/schema";
 import { count, eq } from "drizzle-orm";
-import type { AppRole } from "@perkhub/shared";
+import type { AppRole, Deal } from "@perkhub/shared";
 
 export const adminRoutes = new Hono();
 
 adminRoutes.use("/*", requireAuth);
+adminRoutes.use("/*", requireAdminSubRole("super_admin", "affiliation_admin", "commerce_admin"));
 
 adminRoutes.get("/stats", async (c) => {
-  const userId = c.var.userId;
-  const roles = await userRolesRepo.getRolesForUser(db, userId);
-  const isAdmin = roles.some((r) => ["super_admin", "admin", "affiliation_admin", "commerce_admin"].includes(r.role));
-  if (!isAdmin) return c.json({ error: "Forbidden" }, 403);
-
   const [profileCount, membershipCount, groupCount, brandCount, pendingCount, transactionCount, activeCodeCount] =
     await Promise.all([
       db.select({ count: count() }).from(profiles),
@@ -28,6 +26,22 @@ adminRoutes.get("/stats", async (c) => {
       db.select({ count: count() }).from(redemptionCodes).where(eq(redemptionCodes.status, "active")),
     ]);
 
+  const publishedDeals = await dealsRepo.listDeals(db, { status: "published" });
+  const poorPerforming: Deal[] = [];
+  const now = new Date();
+  for (const deal of publishedDeals) {
+    if (!deal.autoExpirePoorPerformance || deal.performanceThreshold === null || deal.performanceThreshold === undefined) {
+      continue;
+    }
+    const elapsed = now.getTime() - new Date(deal.createdAt).getTime();
+    const hoursElapsed = elapsed / (1000 * 60 * 60);
+    if (hoursElapsed < (deal.performanceCheckHours ?? 48)) continue;
+    const redemptionCount = await transactionsRepo.getDealRedemptionCount(db, deal.id, deal.createdAt);
+    if (redemptionCount < deal.performanceThreshold) {
+      poorPerforming.push({ ...deal, redemptionCount });
+    }
+  }
+
   return c.json({
     totalUsers: profileCount[0]?.count ?? 0,
     totalMemberships: membershipCount[0]?.count ?? 0,
@@ -36,13 +50,37 @@ adminRoutes.get("/stats", async (c) => {
     pendingVerifications: pendingCount[0]?.count ?? 0,
     transactions: transactionCount[0]?.count ?? 0,
     activeRedemptionCodes: activeCodeCount[0]?.count ?? 0,
+    poorPerformingDeals: poorPerforming,
   });
+});
+
+adminRoutes.post("/deals/auto-expire-poor", async (c) => {
+  const publishedDeals = await dealsRepo.listDeals(db, { status: "published" });
+  const now = new Date();
+  let expiredCount = 0;
+
+  for (const deal of publishedDeals) {
+    if (!deal.autoExpirePoorPerformance || deal.performanceThreshold === null || deal.performanceThreshold === undefined) {
+      continue;
+    }
+    const elapsed = now.getTime() - new Date(deal.createdAt).getTime();
+    const hoursElapsed = elapsed / (1000 * 60 * 60);
+    if (hoursElapsed < (deal.performanceCheckHours ?? 48)) continue;
+
+    const redemptionCount = await transactionsRepo.getDealRedemptionCount(db, deal.id, deal.createdAt);
+    if (redemptionCount < deal.performanceThreshold) {
+      await dealsRepo.updateDeal(db, deal.id, { status: "expired" });
+      expiredCount++;
+    }
+  }
+
+  return c.json({ expiredCount });
 });
 
 adminRoutes.patch("/users/:userId/role", async (c) => {
   const userId = c.var.userId;
   const roles = await userRolesRepo.getRolesForUser(db, userId);
-  const isSuperAdmin = roles.some((r) => ["super_admin", "admin"].includes(r.role));
+  const isSuperAdmin = roles.some((r) => r.role === "super_admin");
   if (!isSuperAdmin) return c.json({ error: "Forbidden" }, 403);
 
   const { userId: targetUserId } = c.req.param();
@@ -54,7 +92,7 @@ adminRoutes.patch("/users/:userId/role", async (c) => {
 adminRoutes.get("/analytics", async (c) => {
   const userId = c.var.userId;
   const roles = await userRolesRepo.getRolesForUser(db, userId);
-  const isAdmin = roles.some((r) => ["super_admin", "admin", "affiliation_admin", "commerce_admin"].includes(r.role));
+  const isAdmin = roles.some((r) => ["super_admin", "affiliation_admin", "commerce_admin"].includes(r.role));
   if (!isAdmin) return c.json({ error: "Forbidden" }, 403);
 
   const yearParam = c.req.query("year");
@@ -70,7 +108,7 @@ adminRoutes.get("/analytics", async (c) => {
 adminRoutes.get("/sub-users", async (c) => {
   const userId = c.var.userId;
   const roles = await userRolesRepo.getRolesForUser(db, userId);
-  const isSuperAdmin = roles.some((r) => ["super_admin", "admin"].includes(r.role));
+  const isSuperAdmin = roles.some((r) => r.role === "super_admin");
   if (!isSuperAdmin) return c.json({ error: "Forbidden" }, 403);
 
   const allRoles = await db.select().from(userRoles);
@@ -80,7 +118,7 @@ adminRoutes.get("/sub-users", async (c) => {
 adminRoutes.post("/sub-users", async (c) => {
   const userId = c.var.userId;
   const roles = await userRolesRepo.getRolesForUser(db, userId);
-  const isSuperAdmin = roles.some((r) => ["super_admin", "admin"].includes(r.role));
+  const isSuperAdmin = roles.some((r) => r.role === "super_admin");
   if (!isSuperAdmin) return c.json({ error: "Forbidden" }, 403);
 
   const body = await c.req.json();

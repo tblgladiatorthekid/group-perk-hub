@@ -6,7 +6,7 @@ import * as userRolesRepo from "../repositories/userRoles.repo";
 
 export const brandRoutes = new Hono();
 
-// Public list: only approved by default. `?status=all|pending|approved` requires admin for non-approved.
+// Public list: only approved by default. `?status=all|pending|approved` requires admin sub-role for non-approved.
 brandRoutes.get("/", async (c) => {
   const status = c.req.query("status") ?? "approved";
   const all = await brandsRepo.listBrands(db);
@@ -15,7 +15,6 @@ brandRoutes.get("/", async (c) => {
     return c.json(all.filter((b) => b.status === "approved"));
   }
 
-  // Non-public statuses require admin
   const sessionToken = c.req.header("Authorization")?.replace("Bearer ", "");
   if (!sessionToken) return c.json({ error: "Unauthorized" }, 401);
   try {
@@ -27,7 +26,8 @@ brandRoutes.get("/", async (c) => {
     const auth = await clerkClient.authenticateRequest(c.req.raw);
     if (!auth.isSignedIn) return c.json({ error: "Unauthorized" }, 401);
     const uid = auth.toAuth().userId!;
-    const isAdmin = await userRolesRepo.hasRole(db, uid, "admin");
+    const roles = await userRolesRepo.getRolesForUser(db, uid);
+    const isAdmin = roles.some((r) => ["super_admin", "affiliation_admin", "commerce_admin"].includes(r.role));
     if (!isAdmin) return c.json({ error: "Forbidden" }, 403);
   } catch {
     return c.json({ error: "Unauthorized" }, 401);
@@ -61,13 +61,13 @@ brandRoutes.patch("/:id", requireAuth, async (c) => {
   const brand = await brandsRepo.getBrand(db, c.req.param("id"));
   if (!brand) return c.json({ error: "Brand not found" }, 404);
 
-  const isAdmin = await userRolesRepo.hasRole(db, userId, "admin");
+  const isAdmin = await userRolesRepo.hasRole(db, userId, "super_admin");
   if (brand.ownerUserId !== userId && !isAdmin) {
     return c.json({ error: "Forbidden" }, 403);
   }
 
   const body = await c.req.json();
-  // Non-admins cannot self-approve.
+  // Non-super_admins cannot self-approve.
   if (!isAdmin && body.status && body.status !== brand.status) {
     delete body.status;
   }
@@ -77,7 +77,7 @@ brandRoutes.patch("/:id", requireAuth, async (c) => {
 
 brandRoutes.delete("/:id", requireAuth, async (c) => {
   const userId = c.var.userId;
-  const isAdmin = await userRolesRepo.hasRole(db, userId, "admin");
+  const isAdmin = await userRolesRepo.hasRole(db, userId, "super_admin");
   if (!isAdmin) return c.json({ error: "Forbidden" }, 403);
   await brandsRepo.deleteBrand(db, c.req.param("id"));
   return c.json({ success: true });

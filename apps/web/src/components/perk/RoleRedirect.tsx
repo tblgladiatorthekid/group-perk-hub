@@ -14,9 +14,7 @@ export function RoleRedirect({ fallback }: { fallback?: string }) {
 
   useEffect(() => {
     if (isLoading) return;
-    const dest = isError || !roles
-      ? (fallback ?? "/app")
-      : homePathFor(primaryRole(roles));
+    const dest = isError || !roles ? (fallback ?? "/app") : homePathFor(primaryRole(roles));
     navigate({ to: dest, replace: true });
   }, [roles, isLoading, isError, navigate, fallback]);
 

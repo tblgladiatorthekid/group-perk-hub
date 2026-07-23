@@ -5,6 +5,8 @@ import * as dealsRepo from "../repositories/deals.repo";
 import * as redemptionCodeService from "./redemption-code.service";
 import crypto from "crypto";
 
+const WEEKLY_REDEMPTION_LIMIT = 10;
+
 export interface CreateTransactionInput {
   userId: string;
   dealId: string;
@@ -33,7 +35,22 @@ function generateRedemptionCode(): string {
   return `PRK-${crypto.randomBytes(6).toString("hex").toUpperCase()}`;
 }
 
+function getWeekStart(date: Date): Date {
+  const d = new Date(date);
+  const day = d.getDay();
+  const diff = (day + 6) % 7;
+  d.setDate(d.getDate() - diff);
+  d.setHours(0, 0, 0, 0);
+  return d;
+}
+
 export async function createTransaction(db: Db, input: CreateTransactionInput) {
+  const weekStart = getWeekStart(new Date());
+  const weeklyCount = await transactionsRepo.getWeeklyRedemptionCount(db, input.userId, weekStart);
+  if (weeklyCount >= WEEKLY_REDEMPTION_LIMIT) {
+    throw new Error("Weekly redemption limit exceeded (max 10 per week)");
+  }
+
   const brand = await brandsRepo.getBrand(db, input.brandId);
   if (!brand) throw new Error("Brand not found");
 

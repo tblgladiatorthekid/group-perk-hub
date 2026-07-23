@@ -1,5 +1,5 @@
 import { Hono } from "hono";
-import { requireAuth, requireRole } from "../middleware/auth";
+import { requireAuth, requireAdminSubRole } from "../middleware/auth";
 import { db } from "../db/client";
 import * as profilesRepo from "../repositories/profiles.repo";
 
@@ -7,9 +7,7 @@ export const profileRoutes = new Hono();
 
 profileRoutes.use("/*", requireAuth);
 
-// Admin-only bulk lookup, e.g. GET /profiles?ids=a,b,c — used to resolve
-// submitter name/phone for the membership verification queue.
-profileRoutes.get("/", requireRole("admin"), async (c) => {
+profileRoutes.get("/", requireAdminSubRole("super_admin", "affiliation_admin", "commerce_admin"), async (c) => {
   const ids = (c.req.query("ids") ?? "")
     .split(",")
     .map((id) => id.trim())

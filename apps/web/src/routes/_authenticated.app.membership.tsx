@@ -23,7 +23,11 @@ const nav = [
 
 function formatDate(d?: string | null) {
   if (!d) return "—";
-  return new Date(d).toLocaleDateString("en-NG", { day: "2-digit", month: "short", year: "numeric" });
+  return new Date(d).toLocaleDateString("en-NG", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  });
 }
 
 function MembershipCardPage() {
@@ -84,24 +88,33 @@ function MembershipCardPage() {
               >
                 <div className="flex items-start justify-between">
                   <div>
-                    <div className="text-xs uppercase tracking-wider opacity-80">PerkHub Member</div>
+                    <div className="text-xs uppercase tracking-wider opacity-80">
+                      PerkHub Member
+                    </div>
                     <div className="mt-1 font-display text-2xl font-bold">
                       {profile?.fullName ?? "Member"}
                     </div>
                   </div>
-                  <VerifiedBadge status={m.status} className="bg-white/20 border-white/30 text-white" />
+                  <VerifiedBadge
+                    status={m.status}
+                    className="bg-white/20 border-white/30 text-white"
+                  />
                 </div>
 
                 <div className="mt-6 flex items-end justify-between gap-4">
                   <div className="space-y-2 text-sm">
                     <div>
-                      <div className="text-[10px] uppercase tracking-wider opacity-70">Affiliation</div>
+                      <div className="text-[10px] uppercase tracking-wider opacity-70">
+                        Affiliation
+                      </div>
                       <div className="font-medium">{m.group?.name}</div>
                     </div>
                     <div className="grid grid-cols-2 gap-3 text-xs">
                       <div>
                         <div className="opacity-70">Member #</div>
-                        <div className="font-mono">{m.membershipNumber ?? email?.split("@")[0] ?? "—"}</div>
+                        <div className="font-mono">
+                          {m.membershipNumber ?? email?.split("@")[0] ?? "—"}
+                        </div>
                       </div>
                       <div>
                         <div className="opacity-70">Valid until</div>

@@ -1,7 +1,16 @@
 import { useMemo, useState } from "react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { BadgeCheck, Home, Sparkles, Ticket, User, Upload, CheckCircle2, Loader2 } from "lucide-react";
+import {
+  BadgeCheck,
+  Home,
+  Sparkles,
+  Ticket,
+  User,
+  Upload,
+  CheckCircle2,
+  Loader2,
+} from "lucide-react";
 import type { AffiliationGroup, VerificationMethod } from "@perkhub/shared";
 import { apiClient } from "@/lib/api-client";
 import { DashboardShell } from "@/components/perk/DashboardShell";
@@ -9,7 +18,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/app/verify")({
@@ -117,7 +132,13 @@ function VerifyPage() {
           <p className="mb-4 text-sm text-muted-foreground">
             Which cooperative, alumni body, professional association or corps are you a member of?
           </p>
-          <Select value={groupId} onValueChange={(v) => { setGroupId(v); setMethod(""); }}>
+          <Select
+            value={groupId}
+            onValueChange={(v) => {
+              setGroupId(v);
+              setMethod("");
+            }}
+          >
             <SelectTrigger>
               <SelectValue placeholder="Select your group" />
             </SelectTrigger>
@@ -139,7 +160,11 @@ function VerifyPage() {
               This group accepts the methods below. Instant verification when possible; otherwise
               our team reviews within 24 hours.
             </p>
-            <RadioGroup value={method} onValueChange={(v) => setMethod(v as VerificationMethod)} className="gap-3">
+            <RadioGroup
+              value={method}
+              onValueChange={(v) => setMethod(v as VerificationMethod)}
+              className="gap-3"
+            >
               {availableMethods.includes("email_domain") && (
                 <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-border p-4 hover:bg-secondary/50">
                   <RadioGroupItem value="email_domain" className="mt-1" />
@@ -148,7 +173,8 @@ function VerifyPage() {
                     <div className="text-xs text-muted-foreground">
                       Instant verification if your sign-in email ends in{" "}
                       <span className="font-mono">
-                        {(group.emailDomains ?? []).map((d) => `@${d}`).join(", ") || "an approved domain"}
+                        {(group.emailDomains ?? []).map((d) => `@${d}`).join(", ") ||
+                          "an approved domain"}
                       </span>
                       .
                     </div>
@@ -165,7 +191,9 @@ function VerifyPage() {
                     </div>
                     {method === "membership_number" && (
                       <div className="mt-3">
-                        <Label htmlFor="mnum" className="text-xs">Membership number</Label>
+                        <Label htmlFor="mnum" className="text-xs">
+                          Membership number
+                        </Label>
                         <Input
                           id="mnum"
                           value={membershipNumber}
